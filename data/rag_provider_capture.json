@@ -1,0 +1,344 @@
+{
+  "schemaVersion": "rag-provider-capture-v1",
+  "capturedAt": "2026-11-22T13:37:45.984Z",
+  "measuredDate": "2026-11-22",
+  "origin": "https://motkarta.rynell.org",
+  "queryCount": 12,
+  "successfulQueries": 12,
+  "hybridQueries": 1,
+  "hybridActivationRate": 0.0909,
+  "metrics": {
+    "providerLatencyMedianMs": 2352,
+    "providerLatencyP95Ms": 10418,
+    "faithfulness": 0.75,
+    "answerRelevance": 0.75
+  },
+  "checks": [
+    {
+      "query": "bästa pizzeriorna i stan",
+      "language": "sv",
+      "httpStatus": 200,
+      "elapsedMs": 10418,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 5,
+      "topNames": [
+        "450 Gradi",
+        "800 Grader",
+        "Rockin Grill"
+      ],
+      "fallbackReasons": [
+        "no_current_semantic_matches",
+        "synthesis_rejected_or_unavailable"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 10000
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "intent_matched"
+    },
+    {
+      "query": "god pasta nära Södermalm",
+      "language": "sv",
+      "httpStatus": 200,
+      "elapsedMs": 2614,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 59,
+      "topNames": [
+        "Casa Piadina",
+        "800 grader",
+        "Bambino"
+      ],
+      "fallbackReasons": [
+        "no_current_semantic_matches"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 2139
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "intent_matched"
+    },
+    {
+      "query": "äta fisk",
+      "language": "sv",
+      "httpStatus": 200,
+      "elapsedMs": 7367,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "constrained",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 5,
+      "topNames": [
+        "Kajsas Fisk",
+        "Strömmingsvagnen",
+        "Wasahof"
+      ],
+      "fallbackReasons": [
+        "semantic_unavailable"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 7248
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "intent_matched"
+    },
+    {
+      "query": "Jag vill äta kött",
+      "language": "sv",
+      "httpStatus": 200,
+      "elapsedMs": 8878,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "constrained",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 5,
+      "topNames": [
+        "Brisket & Friends",
+        "Texas Longhorn",
+        "Texas Longhorn"
+      ],
+      "fallbackReasons": [
+        "no_current_semantic_matches"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 8656
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "intent_matched"
+    },
+    {
+      "query": "äta husman",
+      "language": "sv",
+      "httpStatus": 200,
+      "elapsedMs": 6023,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "hybrid",
+      "synthesisMode": "constrained",
+      "modelVersion": "concierge-hybrid-v3",
+      "cardCount": 5,
+      "topNames": [
+        "Pelikan",
+        "Husman",
+        "Bord"
+      ],
+      "fallbackReasons": [],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 5902
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "intent_matched"
+    },
+    {
+      "query": "äta vegetariskt",
+      "language": "sv",
+      "httpStatus": 200,
+      "elapsedMs": 9237,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 5,
+      "topNames": [
+        "Fotografiska",
+        "Mahalo",
+        "Hermans"
+      ],
+      "fallbackReasons": [
+        "no_current_semantic_matches",
+        "synthesis_rejected_or_unavailable"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 9060
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "intent_matched"
+    },
+    {
+      "query": "Drop Coffee Roasters",
+      "language": "en",
+      "httpStatus": 200,
+      "elapsedMs": 128,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 1,
+      "topNames": [
+        "Drop Coffee Roasters"
+      ],
+      "fallbackReasons": [
+        "ai_rate_gate_closed"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 0
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "exact_name_matched"
+    },
+    {
+      "query": "cozy place to unwind",
+      "language": "en",
+      "httpStatus": 200,
+      "elapsedMs": 2092,
+      "status": "clarification",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 0,
+      "topNames": [],
+      "fallbackReasons": [
+        "ai_rate_gate_closed"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 1800
+      },
+      "faithfulness": 0,
+      "faithfulnessReason": "no_cards_returned",
+      "answerRelevance": 0,
+      "relevanceReason": "empty_results"
+    },
+    {
+      "query": "specialty coffee Södermalm",
+      "language": "en",
+      "httpStatus": 200,
+      "elapsedMs": 2352,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 6,
+      "topNames": [
+        "Drop Coffee Roasters",
+        "Pascal Café & Bakery",
+        "Johan & Nyström"
+      ],
+      "fallbackReasons": [
+        "ai_rate_gate_closed"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 0
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "intent_matched"
+    },
+    {
+      "query": "bra surdegsbageri i Stockholm",
+      "language": "sv",
+      "httpStatus": 200,
+      "elapsedMs": 1137,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 5,
+      "topNames": [
+        "Gamla stans polkagriskokeri",
+        "Fabrique Slipen",
+        "Bageri Petrus"
+      ],
+      "fallbackReasons": [
+        "ai_rate_gate_closed"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 0
+      },
+      "faithfulness": 1,
+      "faithfulnessReason": "all_cards_cited",
+      "answerRelevance": 1,
+      "relevanceReason": "intent_matched"
+    },
+    {
+      "query": "mysig vinbar på Södermalm",
+      "language": "sv",
+      "httpStatus": 200,
+      "elapsedMs": 2119,
+      "status": "clarification",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 0,
+      "topNames": [],
+      "fallbackReasons": [
+        "ai_rate_gate_closed"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 1800
+      },
+      "faithfulness": 0,
+      "faithfulnessReason": "no_cards_returned",
+      "answerRelevance": 0,
+      "relevanceReason": "empty_results"
+    },
+    {
+      "query": "best sushi in Tokyo",
+      "language": "en",
+      "httpStatus": 200,
+      "elapsedMs": 1350,
+      "status": "ok",
+      "source": "d1",
+      "retrievalMode": "lexical",
+      "synthesisMode": "template",
+      "modelVersion": "concierge-lexical-v3",
+      "cardCount": 5,
+      "topNames": [
+        "Tokyo Sushi",
+        "K25",
+        "Sushi Solen"
+      ],
+      "fallbackReasons": [
+        "ai_rate_gate_closed"
+      ],
+      "timingsMs": {
+        "lexical": 0,
+        "total": 0
+      },
+      "faithfulness": 0,
+      "faithfulnessReason": "returned_cards_on_out_of_scope",
+      "answerRelevance": 0,
+      "relevanceReason": "failed_abstention"
+    }
+  ]
+}

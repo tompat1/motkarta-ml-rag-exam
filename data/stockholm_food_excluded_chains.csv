@@ -1,0 +1,43 @@
+osm_type,osm_id,name,category,establishment_type,cuisine,opening_hours,street,house_number,website,latitude,longitude,source,address,osm_timestamp,neighbourhood,missing_address,missing_opening_hours,missing_website,chain_brand,excluded_chain
+node,29835538,Burger King,fast_food,Restaurant,burger,"Su-Th 09:00-05:00, Fr,Sa 09:00-06:00",,,,59.3335636,18.0564035,OpenStreetMap,,,Central Stockholm,True,False,True,Burger King,True
+node,29835544,McDonald's,fast_food,Restaurant,burger,Mo-Th 08:00-24:00; Fr-Sa 08:00-04:00; Su 08:00-24:00,Vasagatan,24,,59.3313321,18.0590879,OpenStreetMap,Vasagatan 24,,Central Stockholm,False,False,True,McDonald's,True
+node,29898155,McDonald's,fast_food,Restaurant,burger,Mo-Fr 07:00-23:00; Sa-Su 08:00-23:00,,,http://www.mcdonalds.se,59.3390141,18.0908304,OpenStreetMap,,,Central Stockholm,True,False,False,McDonald's,True
+node,246008327,Max,fast_food,Restaurant,burger,"Mo-Tu,Su 10:00-01:00; Th 10:00-05:00; Fr-Sa 10:00-06:00",,,,59.3327363,18.0718982,OpenStreetMap,,,Central Stockholm,True,False,True,MAX,True
+node,246008329,Max,fast_food,Restaurant,burger,"Sa-Th 10:00-24:00, Fr,Sa 10:00-01:00",,,https://www.max.se/sv/Hitta-MAX/Restauranger/Stockholm-Hammarby-Sjostad/,59.3021163,18.1034556,OpenStreetMap,,,East Stockholm,True,False,False,MAX,True
+node,246008332,Max,fast_food,Restaurant,burger,"Mo-Th 10:00-02:00, Fr-Sa 10:00-05:00; Su 10:00-02:00",,,,59.3323106,18.0573765,OpenStreetMap,,,Central Stockholm,True,False,True,MAX,True
+node,250287259,McDonald's,fast_food,Restaurant,burger,24/7,,,,59.4136316,17.9306363,OpenStreetMap,,,North Stockholm,True,False,True,McDonald's,True
+node,255277536,McDonald's,fast_food,Restaurant,burger,,Bogårdsvägen,30,,59.2624876,18.1003137,OpenStreetMap,Bogårdsvägen 30,,East Stockholm,False,True,True,McDonald's,True
+node,271724972,McDonald's,fast_food,Restaurant,burger,24/7,,,http://www.mcdonalds.se,59.2930743,18.0012108,OpenStreetMap,,,Central Stockholm,True,False,False,McDonald's,True
+node,331008581,McDonald's,fast_food,Restaurant,burger,Mo-We 07:00-02:00; Th-Sa 07:00-04:00; Su 07:00-02:00,,,http://www.mcdonalds.se,59.3335829,18.0323481,OpenStreetMap,,,Central Stockholm,True,False,False,McDonald's,True
+node,436380812,McDonald's,fast_food,Restaurant,burger,Mo-Tu 08:00-01:00; We-Th 08:00-02:00; Fr 08:00-04:00; Su 08:00-01:00,,,https://www.mcdonalds.com/se/sv-se/location/stockholm/folkungagatan/folkungagatan-50/8.html,59.3141509,18.0741154,OpenStreetMap,,,Central Stockholm,True,False,False,McDonald's,True
+node,442104095,McDonald's,fast_food,Restaurant,burger,Mo-Su 06:00-24:00,Sockengränd,1,http://www.mcdonalds.se,59.2865189,18.0490708,OpenStreetMap,Sockengränd 1,,South Stockholm,False,False,False,McDonald's,True
+node,444839115,McDonald's,fast_food,Restaurant,burger,Mo-We 06:30-22:00; Th-Su 06:30-23:00,,,,59.329719,18.0587376,OpenStreetMap,,,Central Stockholm,True,False,True,McDonald's,True
+node,449884278,Max,fast_food,Restaurant,burger,"Su-Tu 10:00-01:00, We,Th 10:00-05:00, Fr,Sa 10:00-06:00",,,,59.3362369,18.0703739,OpenStreetMap,,,Central Stockholm,True,False,True,MAX,True
+node,449884355,McDonald's,fast_food,Restaurant,burger,"Mo-Th 08:00-23:00, Fr,Sa 08:00-04:00, Su 08:00-23:00",,,,59.3350269,18.0609582,OpenStreetMap,,,Central Stockholm,True,False,True,McDonald's,True
+node,467058801,McDonald's,fast_food,Restaurant,burger,,,,,59.3432248,18.0558266,OpenStreetMap,,,Central Stockholm,True,True,True,McDonald's,True
+node,472081569,McDonald's,fast_food,Restaurant,burger,Mo-Th 09:00-21:00; Sa 10:00-22:00; Fr 09:00-22:00; Su 10:00-21:00,,,http://www.mcdonalds.se,59.3312253,18.0685599,OpenStreetMap,,,Central Stockholm,True,False,False,McDonald's,True
+node,478083115,Burger King,fast_food,Restaurant,burger,"Mo-Fr 09:00-21:00; Sa,Su 10:00-19:00",,,,59.242336,18.0914028,OpenStreetMap,,,South Stockholm,True,False,True,Burger King,True
+node,538182078,Burger King,fast_food,Restaurant,burger,Mo 09:00-02:00; Tu-Th 09:00-03:00; Fr-Sa 09:00-05:00; Su 09:00-02:00,,,https://burgerking.se,59.3432784,18.0515207,OpenStreetMap,,,Central Stockholm,True,False,False,Burger King,True
+node,582659271,McDonald's,fast_food,Restaurant,burger,"Mo-Th 07:00-24:00; Su 07:00-24:00; Fr,Sa 00:00-24:00",,,http://www.mcdonalds.se,59.3386853,17.938783,OpenStreetMap,,,Central Stockholm,True,False,False,McDonald's,True
+node,708031994,Sibylla,fast_food,Restaurant,grill,"Su-Th 11:00-23:00, Fr,Sa 11:00-05:00",,,https://www.sibylla.se,59.3394008,18.0376998,OpenStreetMap,,,Central Stockholm,True,False,False,Sibylla,True
+node,719629893,Burger King,fast_food,Restaurant,burger,"Mo,Tu 10:00-23:00, We,Th 10:00-24:00, Fr-Sa 10:00-03:00, Su 10:00-23:00",,,,59.3150676,18.0708552,OpenStreetMap,,,Central Stockholm,True,False,True,Burger King,True
+node,772330091,Max,fast_food,Restaurant,burger,"PH,Su-Fr 10:00-23:00; Sa 10:00-24:00",,,,59.402939,17.9466205,OpenStreetMap,,,North Stockholm,True,False,True,MAX,True
+node,1036339167,McDonald's,fast_food,Restaurant,burger,Mo-Fr 06:00-24:00;Sa-Su 07:00-24:00,,,http://www.mcdonalds.se,59.3104032,18.0229847,OpenStreetMap,,,Central Stockholm,True,False,False,McDonald's,True
+node,1149275195,McDonald's,fast_food,Restaurant,burger,Mo-Th 10:00-24:00; Fr-Sa 10:00-04:00; Su 10:00-24:00,,,,59.3179189,18.0536998,OpenStreetMap,,,Central Stockholm,True,False,True,McDonald's,True
+node,1348515103,McDonald's,fast_food,Restaurant,burger,"Mo-Tu 10:00-24:00, We-Th 10:00-01:00, Fr-Sa 10:00-04:00; Su 10:00-24:00",,,,59.309096,18.0762137,OpenStreetMap,,,Central Stockholm,True,False,True,McDonald's,True
+node,2014176496,Max,fast_food,Restaurant,burger,Mo-Tu 10:00-01:00;We-Th 10:00-03:00;Fr-Sa 11:00-05:00;Su 10:00-01:00,,,https://www.max.se/hitta-max/restauranger/stockholm-hotorget/,59.3354163,18.0624148,OpenStreetMap,,,Central Stockholm,True,False,False,MAX,True
+node,2633888290,Burger King,fast_food,Restaurant,burger,Mo-Su 09:00-23:30,,,https://burgerking.se,59.3308623,18.057762,OpenStreetMap,,,Central Stockholm,True,False,False,Burger King,True
+node,2824351742,Max,fast_food,Restaurant,burger,Mo-Fr 09:00-24:00; Sa-Su 10:00-23:00,,,https://www.max.se/hitta-max/restauranger/stockholm-torsplan/,59.3468506,18.0327712,OpenStreetMap,,,Central Stockholm,True,False,False,MAX,True
+node,3208049240,Max,fast_food,Restaurant,burger,"Mo-Fr 09:00-24:00, Sa,Su 10:00-24:00",,,,59.3505928,17.95733,OpenStreetMap,,,North Stockholm,True,False,True,MAX,True
+node,3265535324,Burger King,fast_food,Restaurant,burger,"Mo-Th,Su 08:00-01:00; Fr-Sa 08:00-02:00",,,https://burgerking.se/restauranger/arsta,59.2956866,18.0337433,OpenStreetMap,,,Central Stockholm,True,False,False,Burger King,True
+node,6402220064,Max,fast_food,Restaurant,burger,"Mo-Tu,Su 09:00-03:00; We-Sa 09:00-05:00",,,,59.3155267,18.0730649,OpenStreetMap,,,Central Stockholm,True,False,True,MAX,True
+node,7077223445,Max,fast_food,Restaurant,burger,"Su-Tu 10:00-01:00, We,Th 10:00-03:00, Fr,Sa 10:00-05:00",,,,59.3338198,18.0324945,OpenStreetMap,,,Central Stockholm,True,False,True,MAX,True
+node,8407911005,McDonald's,fast_food,Restaurant,burger,"Mo-Th 08:00-24:00, Fr 08:00-01:00, Sa 09:00-01:00, Su 09:00-24:00",,,,59.3627246,17.8747291,OpenStreetMap,,,North Stockholm,True,False,True,McDonald's,True
+node,9286811234,Max,fast_food,Restaurant,burger,,,,https://www.max.se/hitta-max/restauranger/sthlm-skondal-/,59.2601868,18.1034994,OpenStreetMap,,,East Stockholm,True,True,False,MAX,True
+node,9793570982,Max,fast_food,Restaurant,burger,"Mo-Th,Su 09:00-02:00; Fr-Sa 09:00-05:00",,,https://www.max.se/hitta-max/restauranger/sthlm-odenplan-/,59.3426927,18.0509517,OpenStreetMap,,,Central Stockholm,True,False,False,MAX,True
+node,9980008817,Max,fast_food,Restaurant,burger,Mo-Tu 10:00-01:00;We-Th 10:00-03:00;Fr-Sa 10:00-05:00;Su 10:00-01:00,,,,59.3325857,18.0643791,OpenStreetMap,,,Central Stockholm,True,False,True,MAX,True
+node,11991713571,Burger King,fast_food,Restaurant,burger,,,,,59.2743899,17.9072399,OpenStreetMap,,,South Stockholm,True,True,True,Burger King,True
+node,12444846094,McDonald's,fast_food,Restaurant,burger,Mo-Su 07:00-24:00,,,,59.3462332,18.0325049,OpenStreetMap,,,Central Stockholm,True,False,True,McDonald's,True
+way,24277913,Burger King,fast_food,Restaurant,burger,,Kottbygatan,1,https://www.bk.com/,59.4172053,17.9240402,OpenStreetMap,Kottbygatan 1,,North Stockholm,False,True,False,Burger King,True
+way,35312124,McDonald's,fast_food,Restaurant,burger,24/7,,,http://www.mcdonalds.se,59.272611,18.0128266,OpenStreetMap,,,South Stockholm,True,False,False,McDonald's,True
+way,1384441287,Max,fast_food,Restaurant,burger,"Su-Th 10:00-02:00, Fr,Sa 10:00-04:00",Rågsvedsvägen,104,,59.2573546,18.0160173,OpenStreetMap,Rågsvedsvägen 104,,South Stockholm,False,False,True,MAX,True

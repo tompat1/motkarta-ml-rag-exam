@@ -1,0 +1,19 @@
+[
+  {"name": "Frantzén", "area": "Norrmalm", "category": "Sveriges Bästa Restaurang #1", "url": "https://sverigesbasta.com/restauranger/frantzen/"},
+  {"name": "AIRA", "area": "Djurgården", "category": "Sveriges Bästa Restaurang", "url": "https://sverigesbasta.com/restauranger/aira/"},
+  {"name": "Adam/Albin", "area": "Vasastan", "category": "Sveriges Bästa Restaurang", "url": "https://sverigesbasta.com/restauranger/adam-albin/"},
+  {"name": "Lilla Ego", "area": "Vasastan", "category": "Sveriges Bästa Restaurang", "url": "https://sverigesbasta.com/restauranger/lilla-ego/"},
+  {"name": "Rolfs kök", "area": "Norrmalm", "category": "Sveriges Bästa Krog", "url": "https://sverigesbasta.com/restauranger/rolfs-kok/"},
+  {"name": "Babette", "area": "Vasastan", "category": "Sveriges Bästa Kvarterskrog", "url": "https://sverigesbasta.com/restauranger/babette/"},
+  {"name": "Hantverket", "area": "Östermalm", "category": "Sveriges Bästa Restaurang", "url": "https://sverigesbasta.com/restauranger/hantverket/"},
+  {"name": "Sturehof", "area": "Östermalm", "category": "Sveriges Bästa Klassiker", "url": "https://sverigesbasta.com/restauranger/sturehof/"},
+  {"name": "Ekstedt", "area": "Östermalm", "category": "Sveriges Bästa Restaurang", "url": "https://sverigesbasta.com/restauranger/ekstedt/"},
+  {"name": "Portal", "area": "Vasastan", "category": "Sveriges Bästa Restaurang", "url": "https://sverigesbasta.com/restauranger/portal/"},
+  {"name": "Brasserie Astoria", "area": "Östermalm", "category": "Sveriges Bästa Brasserie", "url": "https://sverigesbasta.com/restauranger/brasserie-astoria/"},
+  {"name": "Tranan", "area": "Vasastan", "category": "Sveriges Bästa Klassiker", "url": "https://sverigesbasta.com/restauranger/tranan/"},
+  {"name": "Operakällaren", "area": "Norrmalm", "category": "Sveriges Bästa Gastronomi", "url": "https://sverigesbasta.com/restauranger/operakallaren/"},
+  {"name": "Schmaltz", "area": "Östermalm", "category": "Sveriges Bästa Bar & Chark", "url": "https://sverigesbasta.com/restauranger/schmaltz/"},
+  {"name": "Prinsen", "area": "Norrmalm", "category": "Sveriges Bästa Krogklassiker", "url": "https://sverigesbasta.com/restauranger/prinsen/"},
+  {"name": "Pelikan", "area": "Södermalm", "category": "Sveriges Bästa Husmanskost", "url": "https://sverigesbasta.com/restauranger/pelikan/"},
+  {"name": "Solen", "area": "Söderort", "category": "Sveriges Bästa Krogupplevelse", "url": "https://sverigesbasta.com/restauranger/solen/"}
+]

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 480" width="1120" height="480" role="img" aria-label="3. Ranking Baseline A/B Experiment &amp; 5-Fold Cross-Validated ML Model">
+  <rect width="1120" height="480" fill="#FCFBF7" stroke="#141414" stroke-width="1.5"/>
+  <text x="32" y="38" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#141414">3. Ranking Baseline A/B Experiment &amp; 5-Fold Cross-Validated ML Model</text>
+  <text x="32" y="58" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#5C5852">Left: Raw Popularity (A) vs Transparent Multi-Signal (B) | Right: HistGradientBoostingRegressor OOF Residuals (MAE=0.174, R²=0.9947)</text>
+  <rect x="32" y="92" width="510" height="355" fill="#FFFFFF" stroke="#E5E1D8"/>
+  <text x="48" y="118" font-family="ui-sans-serif, sans-serif" font-size="13" font-weight="700" fill="#141414">Ranking A (Raw Popularity) vs Ranking B (Multi-Signal)</text>
+  <text x="48" y="150" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Cuisine Entropy (×20)</text>
+  <rect x="182" y="158" width="143" height="15" fill="#94A3B8"/>
+  <text x="331" y="170" font-family="ui-monospace, monospace" font-size="10.5" fill="#5C5852">A: 2.75</text>
+  <rect x="182" y="177" width="209" height="15" fill="#059669"/>
+  <text x="397" y="189" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#059669">B: 4.02</text>
+  <text x="48" y="214" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Independent Ratio (%)</text>
+  <rect x="182" y="222" width="247" height="15" fill="#94A3B8"/>
+  <text x="435" y="234" font-family="ui-monospace, monospace" font-size="10.5" fill="#5C5852">A: 95%</text>
+  <rect x="182" y="241" width="260" height="15" fill="#059669"/>
+  <text x="448" y="253" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#059669">B: 100%</text>
+  <text x="48" y="278" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Unfamiliar Discovery (%)</text>
+  <rect x="182" y="286" width="156" height="15" fill="#94A3B8"/>
+  <text x="344" y="298" font-family="ui-monospace, monospace" font-size="10.5" fill="#5C5852">A: 60%</text>
+  <rect x="182" y="305" width="260" height="15" fill="#059669"/>
+  <text x="448" y="317" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#059669">B: 100%</text>
+  <text x="48" y="342" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Satisfaction Proxy</text>
+  <rect x="182" y="350" width="135" height="15" fill="#94A3B8"/>
+  <text x="323" y="362" font-family="ui-monospace, monospace" font-size="10.5" fill="#5C5852">A: 52.2</text>
+  <rect x="182" y="369" width="208" height="15" fill="#059669"/>
+  <text x="396" y="381" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#059669">B: 80.0</text>
+  <rect x="568" y="92" width="520" height="355" fill="#FFFFFF" stroke="#E5E1D8"/>
+  <text x="584" y="118" font-family="ui-sans-serif, sans-serif" font-size="13" font-weight="700" fill="#141414">5-Fold OOF Prediction Residual Distribution (n=3,192)</text>
+  <line x1="620" y1="397" x2="1064" y2="397" stroke="#141414" stroke-width="1.2"/>
+  <line x1="620" y1="144" x2="620" y2="397" stroke="#141414" stroke-width="1.2"/>
+  <rect x="620.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="638.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="657.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="675.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="694.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="712.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="731.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="749.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="768.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="786.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="805.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="823.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="842.0" y="395" width="16.5" height="2" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="860.5" y="238" width="16.5" height="159" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="879.0" y="154" width="16.5" height="243" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="897.5" y="396" width="16.5" height="1" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="916.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="934.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="953.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="971.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="990.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="1008.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="1027.0" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <rect x="1045.5" y="397" width="16.5" height="0" fill="#D97706" fill-opacity="0.85"/>
+  <line x1="879" y1="144" x2="879" y2="397" stroke="#D94E2A" stroke-width="1.8" stroke-dasharray="4,3"/>
+  <text x="885" y="158" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#D94E2A">Zero Error</text>
+  <text x="842" y="429" text-anchor="middle" font-family="ui-sans-serif, sans-serif" font-size="11" font-weight="700" fill="#141414">Residual (y_actual − y_pred) | MAE = 0.174, R² = 0.9947</text>
+</svg>

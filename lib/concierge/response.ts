@@ -1,0 +1,163 @@
+import { VERSIONS, type ConciergeResponse, type ConciergeCard, type QueryContext, type RankedCandidate, type WebSearchFallback } from './contracts.ts';
+import { extractStructuredFilters } from './filters.ts';
+import { parseAction, parseIntent } from './intent.ts';
+import { plainText, safeUrl } from './facts.ts';
+import { lexicalCandidates } from './retrieval.ts';
+import type { ConciergePlace } from './contracts.ts';
+
+export function buildWebSearchFallback(query: string, language: 'sv' | 'en'): WebSearchFallback {
+  const cleanQuery = query.trim();
+  const searchPrompt = `${cleanQuery} Stockholm café restaurang mat`;
+  const osmQuery = `${cleanQuery} Stockholm`;
+  const sv = language === 'sv';
+  return {
+    query: cleanQuery,
+    links: [
+      {
+        title: sv ? 'Sök på Google' : 'Search on Google',
+        url: `https://www.google.com/search?q=${encodeURIComponent(searchPrompt)}`,
+        provider: 'google',
+      },
+      {
+        title: sv ? 'Sök på DuckDuckGo' : 'Search on DuckDuckGo',
+        url: `https://duckduckgo.com/?q=${encodeURIComponent(searchPrompt)}`,
+        provider: 'duckduckgo',
+      },
+      {
+        title: sv ? 'Sök på OpenStreetMap' : 'Search on OpenStreetMap',
+        url: `https://www.openstreetmap.org/search?query=${encodeURIComponent(osmQuery)}`,
+        provider: 'osm',
+      },
+    ],
+  };
+}
+
+export function makeCard(candidate: RankedCandidate, language: 'sv' | 'en'): ConciergeCard {
+  const sv = language === 'sv';
+  const { place, facts } = candidate;
+  const unknown = sv ? 'Uppgift saknas' : 'Unknown';
+  const hours = facts.facts.find((f) => f.field === 'openingHours');
+  const price = facts.facts.find((f) => f.field === 'priceSEK');
+  const citations = facts.facts;
+  const listed = facts.facts.filter((f) => ['cuisine', 'kind', 'area'].includes(f.field)).map((f) => f.value).join('; ');
+  const conciergePlace = place as ConciergePlace;
+  const lastVerifiedVal = plainText(conciergePlace.lastVerified || conciergePlace.verifiedAt) || unknown;
+  return {
+    id: place.id, name: plainText(place.name), kind: place.kind, area: plainText(place.area),
+    idNamespace: place.idNamespace, osmIdentity: place.osmIdentity,
+    latitude: place.latitude, longitude: place.longitude,
+    whyItMatches: candidate.exact ? (sv ? 'Namnet matchar din sökning.' : 'The name matches your search.') : `${sv ? 'Listade uppgifter' : 'Listed attributes'}: ${listed}.`,
+    hoursConfidence: hours ? `${hours.value} (${sv ? 'listade tider, öppet nu ej verifierat' : 'listed hours; open now unverified'})` : unknown,
+    priceConfidence: price ? (price.value.includes('SEK') ? `${price.value} (${sv ? 'listat pris' : 'listed price'})` : `${price.value} SEK (${sv ? 'listat pris' : 'listed price'})`) : unknown,
+    lastVerified: lastVerifiedVal,
+    missingInfo: [!hours && (sv ? 'Öppettider saknas' : 'Opening hours missing'), !price && (sv ? 'Pris saknas' : 'Price missing')].filter(Boolean).join('; ') || (sv ? 'Inga saknade basfakta' : 'None (complete baseline facts)'),
+    dataSources: [...new Set(citations.map((f) => f.source))].join('; '), citations,
+    distanceKm: candidate.distanceKm, website: safeUrl(place.website),
+  };
+}
+export function renderAnswer(result: Pick<ConciergeResponse, 'intro' | 'cards'> & { webSearch?: WebSearchFallback }): string {
+  if (!result.cards.length && result.webSearch?.externalResults?.length) {
+    const webCards = result.webSearch.externalResults.map((ext) => [
+      `### **${ext.title}** (${ext.domain})`,
+      ext.snippet ? `• ${ext.snippet}` : null,
+      `• [Besök hemsida](${ext.url})`,
+    ].filter(Boolean).join('\n'));
+    return [result.intro, ...webCards].join('\n\n');
+  }
+
+  return [result.intro, ...result.cards.map((c) => [
+    `### **${c.name}**`, `• **Why it matches**: ${c.whyItMatches}`,
+    `• **Area / Location**: ${c.area}`, `• **Price confidence**: ${c.priceConfidence}`,
+    `• **Opening-hours confidence**: ${c.hoursConfidence}`, `• **Data sources & License**: ${c.dataSources}`,
+    `• **Last verified date**: ${c.lastVerified}`, `• **Missing/Uncertain info**: ${c.missingInfo}`,
+  ].join('\n'))].join('\n\n');
+}
+const CANONICAL_AREA_NAMES: Record<string, string> = {
+  'gamla stan': 'Gamla Stan',
+  'sodermalm': 'Södermalm',
+  'vasastan': 'Vasastan',
+  'ostermalm': 'Östermalm',
+  'kungsholmen': 'Kungsholmen',
+  'norrmalm': 'Norrmalm',
+  'norra djurgarden': 'Norra Djurgården',
+  'djurgarden': 'Djurgården',
+  'gardet': 'Gärdet',
+  'kransen': 'Kransen',
+  'vasterort': 'Västerort',
+  'soderort': 'Söderort',
+  'norrort': 'Norrort',
+  'city': 'City',
+};
+
+export function buildResponse(query: string, candidates: RankedCandidate[], total: number, context: QueryContext = {}, source = 'local'): ConciergeResponse {
+  const intent = parseIntent(query, context);
+  const action = parseAction(query);
+  const sv = intent.language === 'sv';
+  const isDistrictQuery = Boolean(intent.area);
+  const isCategoryBrowse = !action && !intent.isPagination && (intent.bar || intent.cocktail || intent.wineBar || intent.pub || intent.bakery || intent.cafe || intent.specialty);
+  const isCuisineBrowse = !action && !intent.isPagination && intent.cuisineKinds.length > 0;
+  const cardPicks = action ? [] : (isDistrictQuery ? candidates : candidates.slice(0, 5));
+  const mapPicks = action ? [] : (isDistrictQuery || isCuisineBrowse || isCategoryBrowse ? candidates : cardPicks);
+  let intro = sv ? 'Här är träffar från Motkartas katalog. Saknade uppgifter är markerade.' : 'Based on our auditable open dataset, here are catalog matches. Missing facts are marked.';
+  if (isDistrictQuery && mapPicks.length > 0) {
+    const areaName = intent.area ? (CANONICAL_AREA_NAMES[intent.area] || intent.area.split(' ').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')) : '';
+    intro = sv
+      ? `Här är alla ${mapPicks.length} ställen i ${areaName} från Motkartas katalog. Saknade uppgifter är markerade.`
+      : `Based on our auditable open dataset, here are all ${mapPicks.length} places in ${areaName}. Missing facts are marked.`;
+  } else if (isCategoryBrowse && mapPicks.length > 0) {
+    const categoryLabel = intent.cocktail ? (sv ? 'cocktailbarer' : 'cocktail bars')
+      : intent.wineBar ? (sv ? 'vinbarer' : 'wine bars')
+      : intent.pub ? (sv ? 'pubar och ölbarer' : 'pubs and beer bars')
+      : intent.bar ? (sv ? 'barer och pubar' : 'bars and pubs')
+      : intent.bakery ? (sv ? 'bagerier' : 'bakeries')
+      : intent.cafe ? (sv ? 'kaféer och fikaställen' : 'cafés')
+      : (sv ? 'specialkaffeställen' : 'specialty coffee places');
+    intro = sv
+      ? `Här är ${mapPicks.length} bekräftade ${categoryLabel} i Motkartas katalog. Topp ${Math.min(5, cardPicks.length)} visas nedan; alla finns på kartan och i listan.`
+      : `Here are ${mapPicks.length} confirmed ${categoryLabel} in the Motkarta catalog. The top ${Math.min(5, cardPicks.length)} are below; all matches are on the map and list.`;
+  } else if (isCuisineBrowse && mapPicks.length > 0) {
+    const cuisineLabel = intent.cuisineKinds[0]?.replaceAll('_', ' ') ?? (sv ? 'valt kök' : 'selected cuisine');
+    intro = sv
+      ? `Här är ${mapPicks.length} bekräftade ${cuisineLabel}-ställen i Motkartas katalog. Topp ${Math.min(5, cardPicks.length)} visas nedan; alla finns på kartan och i listan.`
+      : `Here are ${mapPicks.length} confirmed ${cuisineLabel} places in the Motkarta catalog. The top ${Math.min(5, cardPicks.length)} are below; all matches are on the map and list.`;
+  } else if (intent.isPagination) {
+    intro = sv ? 'Här är fler rekommenderade ställen från Motkartas katalog.' : 'Here are more recommended places from the Motkarta catalog.';
+  }
+  if (!mapPicks.length) {
+    if (intent.isPagination) {
+      intro = sv ? 'Det finns inga fler ställen som matchar dina kriterier i katalogen.' : 'There are no more places matching your criteria in the catalog.';
+    } else if (intent.area && (intent.cuisineKinds.length || intent.bar || intent.pub || intent.wineBar || intent.cocktail || intent.bakery || intent.cafe || intent.dishes.length)) {
+      const areaName = intent.area ? (CANONICAL_AREA_NAMES[intent.area] || intent.area.split(' ').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')) : '';
+      intro = sv
+        ? `Vi hittade inga bekräftade ställen just i ${areaName}. Vill du prova i hela Stockholm, eller i en närliggande stadsdel som Södermalm eller Vasastan?`
+        : `No confirmed places found in ${areaName}. Would you like to check across all of Stockholm or in a nearby district like Södermalm or Vasastan?`;
+    } else {
+      intro = sv
+        ? `Jag är inte helt säker på vad du söker med "${query}". Letar du efter mat (t.ex. pizza, hamburgare, krog), en bra bar eller mysigt fika? Välj ett förslag nedan så guidar jag dig!`
+        : `I'm not quite sure what you're looking for with "${query}". Are you looking for food (e.g. pizza, burgers, dining), a great bar, or a café? Pick a suggestion below to guide you!`;
+    }
+  }
+  if (intent.near && !context.location) intro = sv ? 'Dela din position eller ange ett område för att hitta ställen nära dig.' : 'Share your location or specify an area to find places near you.';
+  if (intent.openNow) intro = sv ? 'Aktuella öppettider är inte verifierade. Kontrollera med stället.' : 'Current opening hours are unverified. Check with the venue.';
+  if (action) intro = sv ? 'Öppnar formuläret för ditt val.' : 'Opening the form for your action.';
+  const response: ConciergeResponse = {
+    query, intro, answer: '', cards: cardPicks.map((pick) => makeCard(pick, intent.language)),
+    recommendedPlaces: mapPicks.map(({ place: p }) => ({ id: p.id, name: p.name, kind: p.kind, area: p.area, scores: p.scores, hiddenGem: p.hiddenGem, discoveryReasons: p.discoveryReasons })),
+    source, totalSearchSpace: total, status: mapPicks.length || action ? 'ok' : 'clarification', action,
+    structuredFilters: extractStructuredFilters(query), schemaVersion: VERSIONS.schema, corpusVersion: VERSIONS.corpus,
+    modelVersion: VERSIONS.lexical, promptVersion: VERSIONS.prompt, retrievalMode: 'lexical', synthesisMode: 'template',
+    diagnostics: {
+      fallbackReasons: [], candidateCount: candidates.length, timingsMs: {},
+      ranking: mapPicks.map((pick) => ({ id: pick.place.id, exact: pick.exact, lexicalScore: pick.lexicalScore, lexicalRank: pick.lexicalRank, vectorRank: pick.vectorRank, fusionScore: pick.fusionScore, recommendationScore: pick.place.scores.recommendation })),
+    },
+  };
+  if (!mapPicks.length && !action && query.trim()) {
+    response.webSearch = buildWebSearchFallback(query, intent.language);
+  }
+  response.answer = action ? `SUPERPOWER_ACTION: ${action}\n\n${intro}` : renderAnswer(response);
+  return response;
+}
+export function retrieveAndSynthesize(query: string, places: ConciergePlace[], context: QueryContext = {}) {
+  if (!query.trim() || query.length > 1000) return buildResponse('', [], places.length, context);
+  return buildResponse(query, lexicalCandidates(query, places, context), places.length, context);
+}

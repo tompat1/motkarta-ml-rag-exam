@@ -1,0 +1,242 @@
+import { CUISINE_ALIASES, extractStructuredFilters } from './filters.ts';
+import { dishExclusionTerms, dishIntentMatchers } from './cuisine-dishes.ts';
+import { includesPhrase, normalize } from './facts.ts';
+import type { QueryContext } from './contracts.ts';
+import policy from './policy.json' with { type: 'json' };
+
+const STOP = new Set(normalize('and the for with from some best good great find where what want like near place places spot spots food eat get have looking a an in on of to me i och den det ett att som har kan ska med bra för nära mig dig sin sina vara eller alla bästa hitta var deras här där ställe ställen ställena stället restaurang restauranger restaurangen restaurangerna krog krogar krogen krogarna kafe kafeer kafeet café cafe cafes cafeet bageri bagerier bageriet bagerierna bar barer baren barerna pub pubar puben pubarna konditori konditoriet fiket fikastället fikaställena mat äta vill på en i is please show recommend something tips rekommendationer stan staden stad town city och and or eller ge fler mer visa andra annat nagra nagot more other give next suggestions forslag då ju väl nu jag kan var').split(' '));
+const DESCRIPTORS = new Set(normalize('family owned run familjeägd familjeägt handmade handgjorda handgjord independent local authentic artisan hantverks cozy cosy quiet dinner middag lunch breakfast frukost cheap affordable budget billigt prisvärt filter hidden gem gems dold dolda pärla pärlor pärlan mysigt mysig intimate lugnt unwind romantiskt romantic avkopplande charmigt').split(' '));
+const normalizedAliases = new Map(Object.entries(CUISINE_ALIASES).map(([key, values]) => [normalize(key), values.map(normalize)]));
+const normalizedCuisineTerms = new Set([...normalizedAliases.entries()].flatMap(([key, values]) => [key, ...values]));
+
+export function stemSwedish(token: string): string[] {
+  const norm = normalize(token);
+  const stems = new Set<string>([norm]);
+  if (norm.endsWith('erna') || norm.endsWith('arna')) {
+    stems.add(norm.slice(0, -4));
+  } else if (norm.endsWith('iet')) {
+    stems.add(norm.slice(0, -3) + 'i');
+  } else if (norm.endsWith('iorna')) {
+    stems.add(norm.slice(0, -5) + 'ia');
+  } else if (norm.endsWith('rian')) {
+    stems.add(norm.slice(0, -1));
+  } else if (norm.endsWith('et') && norm.length > 4) {
+    stems.add(norm.slice(0, -2));
+  } else if (norm.endsWith('en') && norm.length > 4) {
+    stems.add(norm.slice(0, -2));
+  } else if (norm.endsWith('er') && norm.length > 4) {
+    stems.add(norm.slice(0, -2));
+  } else if (norm.endsWith('ar') && norm.length > 4) {
+    stems.add(norm.slice(0, -2));
+  } else if (norm.endsWith('or') && norm.length > 4) {
+    stems.add(norm.slice(0, -2) + 'a');
+  }
+  return [...stems];
+}
+
+export function tokenAlternatives(token: string): string[] {
+  const norm = normalize(token);
+  const alternatives = new Set<string>([token, norm]);
+  for (const stem of stemSwedish(norm)) {
+    alternatives.add(stem);
+    const fromStem = normalizedAliases.get(stem);
+    if (fromStem) {
+      for (const a of fromStem) alternatives.add(a);
+    }
+  }
+  const direct = normalizedAliases.get(norm);
+  if (direct) {
+    for (const a of direct) alternatives.add(a);
+  }
+  return [...alternatives];
+}
+export function isCuisineTerm(token: string): boolean { return normalizedCuisineTerms.has(normalize(token)); }
+export function queryTerms(query: string): string[] {
+  return [...new Set(normalize(query).split(' ').filter((token) => token.length > 1 && !STOP.has(token) && !DESCRIPTORS.has(token)))];
+}
+function parseSingleIntent(query: string, context: QueryContext = {}) {
+  const normalized = normalize(query);
+  const negative: string[] = [];
+  // Scope negation through punctuation or an explicit contrast. Never discard "not".
+  const positive = query.replace(/\b(?:not|no|without|inte|utan|ej)\s+([^,;.!?]+?)(?=\b(?:but|men)\b|[,;.!?]|$)/gi, (whole, value: string) => {
+    if (/^(expensive|dyrt|dyr)\b/i.test(value.trim())) return whole;
+    negative.push(value); return ' ';
+  });
+  const filters = extractStructuredFilters(positive);
+  const explicitPrice = normalized.match(/(?:under|below|less than|max|hogst)\s+(\d{1,4})(?:\s*(?:kr|sek|kronor))?\b/);
+  const priceMax = explicitPrice ? Number(explicitPrice[1]) : filters.price_max;
+  let rawArea = policy.stockholmLocalities.filter((value) => value !== 'stockholm' && includesPhrase(positive, value)).sort((a, b) => b.length - a.length)[0];
+  if (!rawArea) {
+    if (/\b(gamla stan|gamlastan|gamla staden|old town)\b/i.test(normalized)) rawArea = 'gamla stan';
+    else if (/\b(soder|sodermalm|pa soder|pa sodermalm|sofo|zinkensdamm|zinken|mariatorget|nytorget|hornstull|skanstull|slussen|medborgarplatsen)\b/i.test(normalized)) rawArea = 'sodermalm';
+    else if (/\b(vasastan|vasastaden|vasan|pa vasastan|birkastan|st eriksplan|sankt eriksplan|odenplan|rorstrandsgatan)\b/i.test(normalized)) rawArea = 'vasastan';
+    else if (/\b(ostermalm|oster|pa ostermalm|stureplan|karlaplan|humlegarden)\b/i.test(normalized)) rawArea = 'ostermalm';
+    else if (/\b(kungsholmen|fridhemsplan|stadshagen|kristineberg|fredhall|marieberg)\b/i.test(normalized)) rawArea = 'kungsholmen';
+    else if (/\b(norrmalm|city|hotorget|t-centralen|tcentralen|sergels torg|klara)\b/i.test(normalized)) rawArea = 'norrmalm';
+    else if (/\b(norra djurgarden|norra djurgården|norra djurgardsstaden|norra djurgårdsstaden)\b/i.test(normalized)) rawArea = 'norra djurgarden';
+    else if (/\b(djurgarden|djurgardsbrunn)\b/i.test(normalized)) rawArea = 'djurgarden';
+    else if (/\b(riddarholmen)\b/i.test(normalized)) rawArea = 'riddarholmen';
+    else if (/\b(skeppsholmen|kastellholmen)\b/i.test(normalized)) rawArea = 'skeppsholmen';
+    else if (/\b(gardet|ladugardsgardet|frihamnen|tessinparken)\b/i.test(normalized)) rawArea = 'gardet';
+    else if (/\b(kransen|midsommarkransen|telefonplan|tellusborg)\b/i.test(normalized)) rawArea = 'kransen';
+    else if (/\b(vasterort|bromma|alvik|vallingby|hasselby|spanga|kista|blackeberg|grimsta|husby|rinkeby|tensta|vinsta)\b/i.test(normalized)) rawArea = 'vasterort';
+    else if (/\b(soderort|arsta|liljeholmen|aspudden|hagersten|enskede|farsta|skarpnack|bagarmossen|gubbangen|hokerangen|bandhagen|hogdalen|ragsved|hagsatra|skarholmen|bredang|fruangen|vastberga|johanneshov)\b/i.test(normalized)) rawArea = 'soderort';
+    else if (/\b(norrort)\b/i.test(normalized)) rawArea = 'norrort';
+  } else if (rawArea === 'gamlastan' || rawArea === 'gamla staden' || rawArea === 'old town') {
+    rawArea = 'gamla stan';
+  }
+  const area = rawArea;
+  const excludedBrandRequested = policy.excludedChains.some((name) => includesPhrase(positive, name));
+  const outsideStockholm = policy.excludedLocalities.some((value) => includesPhrase(positive, value));
+  const normPositive = normalize(positive);
+  const dishes = [...new Set(
+    dishIntentMatchers()
+      .filter(([word]) => includesPhrase(positive, word))
+      .map(([, dish]) => dish),
+  )];
+  const bar = /\b(bar|baren|barer|barerna|cocktail|cocktails|cocktailbar|cocktail bar|cocktailbaren|vinbar|vinbaren|vinbarer|wine bar|pub|puben|pubar|pubarna|olhall|olhallen|olhus|olhuset|olbar|taproom|speakeasy|bodega|drinkar|hantverksol|craft beer|ol|olen|vin|vinet)\b/i.test(normPositive) && !/\b(salad bar|salladsbar|juice bar|espresso bar|glassbar|ice cream bar)\b/i.test(normPositive);
+  const cocktail = /\b(cocktail|cocktails|cocktailbar|cocktail bar|cocktailbaren|cocktailbarer|drinkar|speakeasy)\b/i.test(normPositive);
+  const wineBar = /\b(vinbar|vinbaren|vinbarer|wine bar|naturvin|natural wine|vin|vinet)\b/i.test(normPositive);
+  const pub = /\b(pub|puben|pubar|pubarna|olhall|olhallen|olhus|olhuset|olbar|taproom|craft beer|hantverksol|ol|olen|beer)\b/i.test(normPositive);
+  const specialty = /\b(specialty|specialkaffe|roastery|roaster|rosteri)\b/.test(normPositive);
+  const bakery = /\b(bakery|bageri|bageriet|bagerier|bagerierna|hantverksbageri|surdegsbageri|konditori|konditoriet|bullar|kanelbulle|kanelbullar|kardemummabulle|kardemummabullar|surdeg|surdegstbrod)\b/i.test(normPositive);
+  const cafe = /\b(cafe|cafeet|kafe|kafeet|fik|fika|fiket|kaffebar|konditori|konditoriet|kaffestalle|kaffestallen)\b/i.test(normPositive);
+  const dinner = /\b(dinner|middag|kvallsmat|restaurant|restaurang|restaurangen|restauranger|restaurangerna|krog|krogen|krogar|krogarna|bistro|bistron|brasserie|trattoria|trattorian)\b/i.test(normPositive);
+  const atmosphere = /\b(cozy|cosy|mysigt|mysig|unwind|quiet|lugnt|intimate|romantiskt|romantic|avkopplande)\b/.test(normalized);
+  const near = /\b(near me|nearby|nara mig|narmaste|close to me)\b/.test(normalized);
+  const openNow = /\b(open now|oppet nu|open tonight|oppet ikvall)\b/.test(normalized);
+  const exclusions = negative.flatMap((value) => dishExclusionTerms(value));
+  const cuisineKinds = filters.cuisines.filter((c) => !['coffee', 'bakery'].includes(c));
+  const localityTokens = new Set([
+    'soder', 'sodermalm', 'vasastan', 'vasastaden', 'vasan', 'ostermalm', 'oster',
+    'kungsholmen', 'gamla', 'stan', 'gamlastan', 'staden', 'stad', 'town', 'city',
+    'gardet', 'kransen', 'djurgarden', 'riddarholmen', 'skeppsholmen', 'norrmalm', 'vasterort', 'soderort', 'norrort',
+    'birkastan', 'sofo', 'hornstull', 'mariatorget', 'nytorget', 'skanstull',
+    'zinken', 'zinkensdamm', 'stureplan', 'karlaplan', 'fridhemsplan', 'odenplan',
+    'bromma', 'alvik', 'kista', 'arsta', 'liljeholmen', 'aspudden', 'hagersten',
+    'enskede', 'farsta', 'skarpnack', 'lidingo',
+    ...(area ? area.split(' ') : [])
+  ]);
+  const isPriceOrCurrencyNumber = (token: string) => /^\d+$/.test(token) && (
+    (explicitPrice !== null && token === explicitPrice[1]) ||
+    new RegExp(`\\b${token}\\s*(?:kr|sek|kronor)\\b`, 'i').test(positive)
+  );
+  const terms = queryTerms(positive).filter((token) =>
+    !localityTokens.has(token) &&
+    !isPriceOrCurrencyNumber(token) &&
+    !['under', 'below', 'less', 'than', 'max', 'hogst', 'sek', 'kr', 'kronor'].includes(token)
+  );
+  return {
+    positive, filters, priceMax, area, isDistrictQuery: Boolean(area), outsideStockholm, excludedBrandRequested,
+    dishes: [...new Set(dishes)], bar, cocktail, wineBar, pub, cafe, specialty, bakery, dinner,
+    atmosphere, near, openNow, exclusions, cuisineKinds, terms,
+    hiddenGem: /\b(hidden gems?|dolda parlor|dold parla)\b/.test(normalized),
+    language: context.language ?? (/\b(och|jag|nara|mig|basta|hitta|kaffe|middag|pa|oppet|polska|mysig|mysigt|vinbar|vinbaren|baren|barer|barerna|krog|krogen|krogar|krogarna|restaurang|restaurangen|restauranger|bageri|bageriet|bagerier|fik|fika|fiket|stalle|stallen|har|finns|bra|god|goda|ol|olhall|puben|pubar)\b/.test(normalized) ? 'sv' : 'en'),
+  };
+}
+export function parseIntent(query: string, context: QueryContext = {}) {
+  const base = parseSingleIntent(query, context);
+  const normalized = normalize(query);
+  const isPagination = /\b(fler|mer|andra|visa fler|fler stallen|ge mig fler|andra alternativ|visa andra|andra forslag|more|more places|other options|show more|next)\b/i.test(normalized);
+
+  const messages = context.messages ?? [];
+  const userMessages = messages.filter((m) => m.role === 'user');
+
+  let prevTopicIntent: ReturnType<typeof parseSingleIntent> | undefined;
+  for (let i = userMessages.length - 1; i >= 0; i--) {
+    const candidate = parseSingleIntent(userMessages[i].content, { language: base.language });
+    if (candidate.cuisineKinds.length > 0 || candidate.dishes.length > 0 || candidate.specialty || candidate.bakery || candidate.dinner || candidate.bar || candidate.cafe) {
+      prevTopicIntent = candidate;
+      break;
+    }
+  }
+  if (!prevTopicIntent && userMessages.length > 0) {
+    prevTopicIntent = parseSingleIntent(userMessages[userMessages.length - 1].content, { language: base.language });
+  }
+
+  const excludedPlaceNames: string[] = [];
+  for (const msg of messages.filter((m) => m.role === 'assistant')) {
+    const headerMatches = msg.content.matchAll(/###\s*\*\*([^*]+)\*\*/g);
+    for (const match of headerMatches) {
+      if (match[1]) excludedPlaceNames.push(match[1].trim());
+    }
+  }
+
+  let isFollowUp = false;
+  if (prevTopicIntent) {
+    if (isPagination) {
+      isFollowUp = true;
+      return {
+        ...base,
+        cuisineKinds: base.cuisineKinds.length ? base.cuisineKinds : prevTopicIntent.cuisineKinds,
+        dishes: base.dishes.length ? base.dishes : prevTopicIntent.dishes,
+        area: base.area ?? prevTopicIntent.area,
+        isDistrictQuery: Boolean(base.area ?? prevTopicIntent.area),
+        bar: base.bar || prevTopicIntent.bar,
+        cocktail: base.cocktail || prevTopicIntent.cocktail,
+        wineBar: base.wineBar || prevTopicIntent.wineBar,
+        pub: base.pub || prevTopicIntent.pub,
+        cafe: base.cafe || prevTopicIntent.cafe,
+        specialty: base.specialty || prevTopicIntent.specialty,
+        bakery: base.bakery || prevTopicIntent.bakery,
+        dinner: base.dinner || prevTopicIntent.dinner,
+        atmosphere: base.atmosphere || prevTopicIntent.atmosphere,
+        hiddenGem: base.hiddenGem || prevTopicIntent.hiddenGem,
+        priceMax: base.priceMax ?? prevTopicIntent.priceMax,
+        filters: { ...prevTopicIntent.filters, ...base.filters },
+        terms: base.terms.length ? base.terms : prevTopicIntent.terms,
+        isPagination: true,
+        isFollowUp: true,
+        excludedPlaceNames,
+      };
+    }
+
+    const hasNewCuisine = base.cuisineKinds.length > 0 || base.dishes.length > 0 || base.specialty || base.bakery || base.bar || base.cafe;
+    if (!hasNewCuisine && (prevTopicIntent.cuisineKinds.length > 0 || prevTopicIntent.dishes.length > 0 || prevTopicIntent.specialty || prevTopicIntent.bakery || prevTopicIntent.bar || prevTopicIntent.cafe)) {
+      isFollowUp = true;
+      const combinedTerms = [...new Set([...prevTopicIntent.terms, ...base.terms])];
+      return {
+        ...base,
+        cuisineKinds: prevTopicIntent.cuisineKinds,
+        dishes: prevTopicIntent.dishes,
+        area: base.area ?? prevTopicIntent.area,
+        isDistrictQuery: Boolean(base.area ?? prevTopicIntent.area),
+        bar: prevTopicIntent.bar,
+        cocktail: prevTopicIntent.cocktail,
+        wineBar: prevTopicIntent.wineBar,
+        pub: prevTopicIntent.pub,
+        cafe: prevTopicIntent.cafe,
+        specialty: prevTopicIntent.specialty,
+        bakery: prevTopicIntent.bakery,
+        dinner: base.dinner || prevTopicIntent.dinner,
+        atmosphere: base.atmosphere || prevTopicIntent.atmosphere,
+        hiddenGem: base.hiddenGem || prevTopicIntent.hiddenGem,
+        priceMax: base.priceMax ?? prevTopicIntent.priceMax,
+        filters: { ...prevTopicIntent.filters, ...base.filters },
+        terms: combinedTerms,
+        isPagination: false,
+        isFollowUp: true,
+        excludedPlaceNames,
+      };
+    }
+  }
+
+  return {
+    ...base,
+    isDistrictQuery: Boolean(base.area),
+    isPagination,
+    isFollowUp,
+    excludedPlaceNames,
+  };
+}
+export type Intent = ReturnType<typeof parseIntent>;
+export function parseAction(query: string) {
+  const q = normalize(query);
+  const actions = [
+    ['add_place', /^(add place|lagg till stalle|skapa stalle|nytt stalle|tipsa om stalle|tipsa om|tipsa)(?: .+)?$/],
+    ['add_review', /^(add review|skriv recension|lamna recension)(?: .+)?$/],
+    ['add_photo', /^(add photo|lagg till foto|ladda upp bild|lagg till bild)(?: .+)?$/],
+    ['rate_place', /^(rate place|ge betyg|betygsatt stalle|satt betyg)(?: .+)?$/],
+  ] as const;
+  return actions.find(([, pattern]) => pattern.test(q))?.[0];
+}

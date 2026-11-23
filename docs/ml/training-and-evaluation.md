@@ -1,0 +1,343 @@
+# ML training and evaluation
+
+The [real-model concierge trial](concierge-real-model-trial.md) captures live D1
+vector results and constrained fact selections. Its reused diagnostic prompts
+have no D1 relevance labels; synthetic fixture IDs are discarded. Sensitivity
+analysis does not calibrate a serving threshold or establish satisfaction.
+
+The [concierge preview record](concierge-preview.md) adds live HTTP/browser
+integration checks and 256 before/after ranking comparisons for a computation
+optimization. These are operational/parity checks, not new model-quality labels.
+
+The [2026-09-06 concierge reconciliation](concierge-reconciliation.md) validates
+identity, source locality, lifecycle propagation and index compatibility against
+live D1 readback. Lexical/hybrid admission versions are now v2. The synthetic
+regression scores remain unchanged; no new model-quality or satisfaction claim
+follows from passing catalog checks. A fresh labeled evaluation is still required.
+
+## Current trained model
+
+The only trained recommendation-adjacent model currently authorized is the
+offline residual underexposure model in `scripts/model_discovery.py`.
+
+It answers:
+
+> Given observable platform/exposure and structural characteristics, what rating
+> would this platform typically show for a venue like this?
+
+It does not answer:
+
+> Is this restaurant good?
+
+## Training procedure
+
+### 1. Validate input
+
+The script requires all contract columns, at least four rows, ratings between 1
+and 5, at least two folds and interval coverage between 0.5 and 1.0.
+
+Review counts are converted with:
+
+```text
+log_review_count = log(1 + max(review_count, 0))
+```
+
+Numeric missing values use median imputation. Categorical missing values use the
+most frequent value, followed by one-hot encoding with unknown-category support.
+
+### 2. Build spatial groups
+
+Approximate cells are derived from:
+
+```text
+latitude cell  = floor(latitude / 0.01)
+longitude cell = floor(longitude / 0.02)
+```
+
+These are pragmatic Stockholm-scale cells, not H3 identifiers. If at least two
+cells exist, `GroupKFold` holds whole cells out. If every row occupies one cell,
+a deterministic shuffled K-fold fallback is used and clearly named in output.
+
+### 3. Produce out-of-fold predictions
+
+For each fold:
+
+1. Build a fresh preprocessing/model pipeline.
+2. Fit only on other folds.
+3. Predict the held-out fold.
+4. Record the producing fold ID.
+
+Every row must receive exactly one prediction. A missing or duplicate prediction
+is a runtime error.
+
+### 4. Calculate residual
+
+```text
+rating_residual = platform_rating - expected_platform_rating_oof
+```
+
+Positive is higher than the learned platform baseline. Negative is lower.
+
+### 5. Estimate uncertainty
+
+For each fold, the empirical error radius is calculated from absolute OOF errors
+belonging to the other folds. The configured quantile uses the conservative
+`higher` method.
+
+```text
+lower bound = residual - radius
+upper bound = residual + radius
+```
+
+This is a cross-fitted empirical error band. It is not a causal confidence
+interval and does not establish food quality.
+
+`underexposure_confidence` is a bounded monotonic transform of residual relative
+to its error radius. It is useful for candidate prioritization but is not a
+calibrated probability.
+
+### 6. Apply governance fields
+
+Every output is marked `candidate`, carries model/version/validation metadata and
+lists missing evidence gates. No ML row is promoted automatically.
+
+## Why in-sample residuals are prohibited
+
+Training and predicting on the same venue allows the estimator to partially
+memorize its target. Residuals become artificially small or optimistic and no
+longer approximate unseen behavior. Published predictions must be out-of-fold or
+from a later untouched holdout.
+
+## Evaluation layers
+
+### Model fidelity
+
+Minimum diagnostics:
+
+- Mean absolute error
+- Root mean squared error
+- Fold count and strategy
+- Nominal and observed empirical interval coverage
+- Residual distribution
+
+Also evaluate by:
+
+- Cuisine
+- District/outer versus inner city
+- Venue type
+- Chain status
+- Price level
+- Review-volume band
+- New versus established records when dates exist
+
+Aggregate error alone can conceal systematic harm to sparse cuisines or outer-city venues.
+
+### Candidate usefulness
+
+Use independent human review to measure:
+
+- Precision among top residual candidates
+- Share passing evidence gates
+- Share rejected as stale/closed/wrong category
+- Cuisine and geographic coverage
+- Reviewer disagreement
+- Time required per validated candidate
+
+The model is useful only if it improves the review queue, not merely if residuals
+look mathematically interesting.
+
+### Ranking evaluation
+
+`motkarta.evaluation.evaluate_ranking_experiment()` compares:
+
+- Ranking A: raw popularity/review volume
+- Ranking B: transparent recommendation or discovery score
+
+Representation metrics can be computed without outcomes:
+
+- Cuisine entropy
+- Outer-city ratio
+- Independent-business ratio
+- Unfamiliar-discovery ratio
+
+Satisfaction cannot. The function returns `hypothesis_confirmed = None` unless an
+independent outcome column is supplied.
+
+Accepted conventional outcome columns in the CLI workflow:
+
+- `would_return`
+- `positive_outcome`
+- `human_relevance_label`
+
+Never substitute `discovery_score` as satisfaction for a ranking sorted by
+`discovery_score`. That is circular evaluation.
+
+## Future behavioral ranker
+
+Do not train yet. The event contract is instrumented in shadow mode, but a
+behavioral ranker remains blocked until collection quality, privacy behavior,
+retention, attribution windows and slice coverage are validated on real data.
+
+### Candidate training unit
+
+One row should represent a venue impression within a session/query context, with:
+
+- Venue features available at impression time
+- User-declared or pseudonymous-history features available at impression time
+- Context and result position
+- Ranker/model version
+- Subsequent outcome within a documented attribution window
+
+Never use features updated after the outcome or future visits.
+
+### Target design
+
+Begin with explicit, interpretable targets rather than raw click-through rate.
+Possible graded relevance:
+
+| Outcome | Illustrative relevance |
+| --- | ---: |
+| Would return | 4 |
+| Confirmed visit | 3 |
+| Direction request | 2 |
+| Save | 2 |
+| Profile view | 1 |
+| Impression only | 0 or unlabeled/weak negative |
+| Dismiss | -1 or explicit negative |
+
+Values above are design candidates, not approved constants. Validate attribution,
+class balance and gaming risk before adoption.
+
+### Bias correction
+
+At minimum:
+
+- Include result position/exposure context.
+- Train only from actual impressions.
+- Consider inverse-propensity weighting once exploration propensities are known.
+- Keep a controlled exploration allocation for long-tail venues.
+- Cap repeated exposure and audit concentration.
+- Use post-ranking diversity constraints rather than expecting the model to learn policy implicitly.
+
+### Splitting
+
+Use chronological splits:
+
+1. Train on earlier events.
+2. Validate on a later interval.
+3. Test once on the newest untouched interval.
+
+Where possible, also test cold-start venues and sessions/users not represented in
+training. Random row splits can leak the same venue/session across sets.
+
+### Offline metrics
+
+Recommended ranking metrics:
+
+- NDCG@K for graded outcomes
+- Recall@K for high-value outcomes
+- Mean reciprocal rank where one best match is expected
+- Calibration/Brier score if predicting outcome probability
+- Coverage and catalog exposure
+- Novelty and long-tail share
+- Cuisine entropy and geographic diversity
+- Independent venue exposure share
+- Exposure Gini coefficient
+- Worst-slice performance
+
+Accuracy improvements are insufficient if exposure becomes materially more concentrated.
+
+### Online evaluation
+
+Do not run an A/B test until assignment, event logging and privacy behavior are
+tested. Pre-register:
+
+- Primary outcome
+- Guardrail metrics
+- Minimum detectable effect/sample requirements
+- Experiment duration
+- Stopping rule
+- Slice analysis
+- Rollback rule
+
+Guardrails should include hidden-gem evidence failures, closed venue exposure,
+chain exposure, concentration, latency and user dismissals.
+
+## Reproducibility checklist
+
+Record with every run:
+
+- Git commit
+- Input snapshot identifier/hash
+- Capture interval
+- Feature contract version
+- Model version
+- Random seed
+- Fold/group definition
+- Dependency versions
+- Hyperparameters
+- Metrics and slices
+- Output artifact hashes
+- Reviewer/promotion decisions generated later
+
+The current script writes row-level version/fold data but does not yet persist a
+complete run manifest. Adding a JSON manifest is a high-priority maintenance task.
+
+## Concierge retrieval evaluation (2026-09-05)
+
+`execution/evaluate_concierge.py` evaluates lexical baselines and optional captured
+semantic results on source-labeled query fixtures with intent-family splits.
+It reports Recall@50, NDCG@5, exact-name success, unsupported-query abstention,
+coverage, independent exposure and exposure Gini, with language/cuisine/geography/
+type/chain/metadata slices. Satisfaction remains null. See the
+[evaluation record](concierge-evaluation.md); synthetic regression results and
+provider mocks do not establish real-world quality. The original holdout was used
+in safety debugging and must be replaced before any production promotion decision.
+
+### Continuous deterministic RAG quality gate
+
+`tests_python/test_concierge_quality_gate.py` runs the source-labeled 128-query
+fixture through the real JavaScript lexical retriever on every Python test run.
+It fails CI if aggregate Recall@50 or NDCG@5 falls below 0.90, unsupported-query
+abstention or exact-name success falls below 100%, catalog coverage falls below
+0.70, exposure Gini exceeds 0.45, or any non-independent venue receives top-five
+exposure. Development and regression-holdout Recall@50/NDCG@5 must each remain at
+least 0.90; English, Swedish, Polish, and specialty-coffee slices have explicit
+floors appropriate to their current sample sizes.
+
+The same gate reruns retrieval to require identical rankings, rejects duplicate
+candidates, and saturates an 80-venue synthetic catalog to prove that the offline
+retriever uses its full 50-candidate evaluation budget without exceeding it.
+These are regression floors, not claims of optimality or satisfaction. The test
+does not use provider mocks as quality evidence: hybrid BGE-M3 accuracy, Gemma
+synthesis quality, provider latency, and cost still require authorized captures
+and independent review before promotion.
+
+## Hybrid search and Reciprocal Rank Fusion (2026-09-10)
+
+`lib/concierge/hybrid_search.ts` implements Reciprocal Rank Fusion:
+
+$$RRF(d) = \sum_{m \in \{\text{lexical}, \text{dense}\}} \frac{1}{k + r_m(d)}$$
+
+with standard rank smoothing constant $k = 60$. Exact name matches are given priority ahead of vector similarity. Ties are broken deterministically by Motkarta recommendation score, data completeness bonus, and venue ID.
+
+## Position-Debiased LTR and Inverse Propensity Scoring (2026-09-10)
+
+`motkarta/ltr.py` implements counterfactual learning-to-rank to de-bias historical recommendation impressions collected in `recommendation_events`.
+
+1. **Position Examination Model**:
+   $$P(\text{Examine} \mid k) = \max\left(0.05, \frac{1}{(1 + k)^\gamma}\right)$$
+   with position decay exponent $\gamma = 0.75$. Inverse propensity weights are clipped to $20\times$ to prevent high variance on deep positions.
+2. **Outcome Reward Mapping**:
+   Observed user actions are mapped to rewards: `would_return` = 3.0, `visit` = 2.0, `save` = 1.5, `click` = 1.0, `impression` = 0.0, `dismiss` = -1.0.
+3. **Counterfactual NDCG**:
+   Evaluates ranking performance using weighted DCG:
+   $$DCG_{\text{IPS}} = \sum_{i=1}^k \frac{w_i \cdot y_i}{\log_2(i + 1)}$$
+
+## Dataset Drift & Stability Monitoring (2026-09-10)
+
+`motkarta/drift.py` evaluates feature and representation shifts:
+- **Population Stability Index (PSI)** on continuous scores: $<0.10$ (stable), $0.10 \le \text{PSI} < 0.25$ (moderate drift), $\ge 0.25$ (critical drift).
+- **Jensen-Shannon Divergence (JSD)** on categorical distributions (districts, cuisines).
+- **Fairness & Diversity Invariants**: outer-city ratio $\ge 0.30$, independent business ratio $\ge 0.90$, cuisine Shannon entropy $\ge 2.5$.
+

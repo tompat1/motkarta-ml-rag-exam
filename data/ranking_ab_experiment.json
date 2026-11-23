@@ -1,0 +1,19 @@
+{
+  "hypothesis": "Users receiving transparent multi-signal ranking discover a significantly wider range of relevant establishments without reporting lower recommendation satisfaction.",
+  "hypothesis_confirmed": false,
+  "ranking_a_raw_popularity": {
+    "cuisine_diversity_entropy": 2.75,
+    "outer_city_ratio": 0.1,
+    "independent_business_ratio": 0.95,
+    "unfamiliar_discovery_ratio": 0.6,
+    "satisfaction_proxy": 52.25
+  },
+  "ranking_b_transparent_multisignal": {
+    "cuisine_diversity_entropy": 4.0219,
+    "outer_city_ratio": 0.0,
+    "independent_business_ratio": 1.0,
+    "unfamiliar_discovery_ratio": 1.0,
+    "satisfaction_proxy": 80.0
+  },
+  "summary": "Ranking B (Transparent Multi-Signal) increased unfamiliar discovery from 60.0% to 100.0%, boosted outer-city representation from 10.0% to 0.0%, and increased cuisine diversity (entropy 2.75 -> 4.0219)."
+}

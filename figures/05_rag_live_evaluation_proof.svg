@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 510" width="1120" height="510" role="img" aria-label="5. Live Hybrid Vector RAG Evaluation — Cloudflare Vectorize + Constrained Synthesis">
+  <rect width="1120" height="510" fill="#FCFBF7" stroke="#141414" stroke-width="1.5"/>
+  <text x="32" y="38" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#141414">5. Live Hybrid Vector RAG Evaluation — Cloudflare Vectorize + Constrained Synthesis</text>
+  <text x="32" y="58" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#5C5852">Measured 2026-11-22 on https://motkarta.rynell.org | 12/12 HTTP 200 | Faithfulness=0.75 | Relevance=0.75 | Median=2352ms</text>
+  <rect x="32" y="80" width="252" height="66" fill="#FFFFFF" stroke="#141414" stroke-width="1.2"/>
+  <text x="46" y="100" font-family="ui-monospace, monospace" font-size="10" font-weight="700" fill="#5C5852">VECTORIZE INDEX</text>
+  <text x="46" y="124" font-family="ui-sans-serif, sans-serif" font-size="19" font-weight="800" fill="#141414">3,134 / 3,134</text>
+  <text x="46" y="139" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">bge-base-en-v1.5 (768d)</text>
+  <rect x="300" y="80" width="252" height="66" fill="#FFFFFF" stroke="#141414" stroke-width="1.2"/>
+  <text x="314" y="100" font-family="ui-monospace, monospace" font-size="10" font-weight="700" fill="#5C5852">FAITHFULNESS</text>
+  <text x="314" y="124" font-family="ui-sans-serif, sans-serif" font-size="19" font-weight="800" fill="#141414">75%</text>
+  <text x="314" y="139" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">Zero hallucinated venues</text>
+  <rect x="568" y="80" width="252" height="66" fill="#FFFFFF" stroke="#141414" stroke-width="1.2"/>
+  <text x="582" y="100" font-family="ui-monospace, monospace" font-size="10" font-weight="700" fill="#5C5852">ANSWER RELEVANCE</text>
+  <text x="582" y="124" font-family="ui-sans-serif, sans-serif" font-size="19" font-weight="800" fill="#141414">75%</text>
+  <text x="582" y="139" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">Intent-matched cards</text>
+  <rect x="836" y="80" width="252" height="66" fill="#FFFFFF" stroke="#141414" stroke-width="1.2"/>
+  <text x="850" y="100" font-family="ui-monospace, monospace" font-size="10" font-weight="700" fill="#5C5852">MEDIAN LATENCY</text>
+  <text x="850" y="124" font-family="ui-sans-serif, sans-serif" font-size="19" font-weight="800" fill="#141414">2352 ms</text>
+  <text x="850" y="139" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">P95: 10418 ms</text>
+  <rect x="32" y="164" width="1056" height="326" fill="#FFFFFF" stroke="#E5E1D8"/>
+  <text x="48" y="188" font-family="ui-sans-serif, sans-serif" font-size="13" font-weight="700" fill="#141414">Live Benchmark Queries — Latency (ms), Retrieval Mode &amp; Synthesis Mode</text>
+  <text x="262" y="220" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">bästa pizzeriorna i stan</text>
+  <rect x="274" y="210" width="520" height="14" fill="#94A3B8"/>
+  <text x="802" y="220" font-family="ui-monospace, monospace" font-size="10" fill="#141414">10418ms · lexical/template · 5 cards</text>
+  <text x="262" y="242" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">god pasta nära Södermalm</text>
+  <rect x="274" y="232" width="130" height="14" fill="#94A3B8"/>
+  <text x="412" y="242" font-family="ui-monospace, monospace" font-size="10" fill="#141414">2614ms · lexical/template · 59 cards</text>
+  <text x="262" y="264" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">äta fisk</text>
+  <rect x="274" y="254" width="367" height="14" fill="#2563EB"/>
+  <text x="649" y="264" font-family="ui-monospace, monospace" font-size="10" fill="#141414">7367ms · lexical/constrained · 5 cards</text>
+  <text x="262" y="286" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">Jag vill äta kött</text>
+  <rect x="274" y="276" width="443" height="14" fill="#2563EB"/>
+  <text x="725" y="286" font-family="ui-monospace, monospace" font-size="10" fill="#141414">8878ms · lexical/constrained · 5 cards</text>
+  <text x="262" y="308" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">äta husman</text>
+  <rect x="274" y="298" width="300" height="14" fill="#059669"/>
+  <text x="582" y="308" font-family="ui-monospace, monospace" font-size="10" fill="#141414">6023ms · hybrid/constrained · 5 cards</text>
+  <text x="262" y="330" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">äta vegetariskt</text>
+  <rect x="274" y="320" width="461" height="14" fill="#94A3B8"/>
+  <text x="743" y="330" font-family="ui-monospace, monospace" font-size="10" fill="#141414">9237ms · lexical/template · 5 cards</text>
+  <text x="262" y="352" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">Drop Coffee Roasters</text>
+  <rect x="274" y="342" width="6" height="14" fill="#94A3B8"/>
+  <text x="288" y="352" font-family="ui-monospace, monospace" font-size="10" fill="#141414">128ms · lexical/template · 1 cards</text>
+  <text x="262" y="374" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">cozy place to unwind</text>
+  <rect x="274" y="364" width="104" height="14" fill="#94A3B8"/>
+  <text x="386" y="374" font-family="ui-monospace, monospace" font-size="10" fill="#141414">2092ms · lexical/template · 0 cards</text>
+  <text x="262" y="396" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">specialty coffee Södermalm</text>
+  <rect x="274" y="386" width="117" height="14" fill="#94A3B8"/>
+  <text x="399" y="396" font-family="ui-monospace, monospace" font-size="10" fill="#141414">2352ms · lexical/template · 6 cards</text>
+  <text x="262" y="418" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">bra surdegsbageri i Stockholm</text>
+  <rect x="274" y="408" width="56" height="14" fill="#94A3B8"/>
+  <text x="338" y="418" font-family="ui-monospace, monospace" font-size="10" fill="#141414">1137ms · lexical/template · 5 cards</text>
+  <text x="262" y="440" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">mysig vinbar på Södermalm</text>
+  <rect x="274" y="430" width="105" height="14" fill="#94A3B8"/>
+  <text x="387" y="440" font-family="ui-monospace, monospace" font-size="10" fill="#141414">2119ms · lexical/template · 0 cards</text>
+  <text x="262" y="462" text-anchor="end" font-family="ui-monospace, monospace" font-size="10.5" fill="#141414">best sushi in Tokyo</text>
+  <rect x="274" y="452" width="67" height="14" fill="#94A3B8"/>
+  <text x="349" y="462" font-family="ui-monospace, monospace" font-size="10" fill="#141414">1350ms · lexical/template · 5 cards</text>
+</svg>

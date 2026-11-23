@@ -1,0 +1,539 @@
+# ML operations runbook
+
+The [Pages build repair](../build-deployment-repair.md) makes server compilation
+and route/auth validation part of `npm run build`, fixes Node 22.16 test execution,
+and carries the validated catalog CPU limit in root Wrangler configuration.
+
+For the deployed read-only concierge preview, commands, CPU-limit finding and
+isolation, see [Concierge preview](concierge-preview.md). For the authorized bounded
+model trial, ledger preservation and capture replay, see
+[Real-model trial](concierge-real-model-trial.md).
+
+The [2026-09-06 catalog repair record](concierge-reconciliation.md) documents
+applied D1 repairs, guarded rollback and the validated local identity bridge.
+Use its repaired D1 snapshot workflow for the next index plan; no AI activation
+or code deployment was performed with the data repair.
+
+For concierge preview preparation, first follow the
+[live catalog audit](concierge-catalog-readiness.md). It exports D1 through query
+mode, checks identity/current fact hashes and creates a canonical index dry-run
+input without applying database changes.
+
+## Scope
+
+This runbook covers environment setup, residual-model execution, evaluation,
+schema migration, validation, release and rollback. It does not authorize paid
+API usage, production data writes or deployment without the relevant task scope.
+
+### Catalog exclusions and Tasstipset feature-only policy (2026-09-13)
+
+At the owner's request, `catalog-exclusions-v1` excludes every O'Learys branch
+(case/apostrophe/spacing/hyphen variants). Three O'Learys records and 47 records
+created solely from Tasstipset have been removed, reducing the published catalog
+from 3,246 to 3,196 venues. The Tasstipset records include both STF Stockholm
+hostels, hotels and a shop. Their IDs/names are preserved in
+`lib/catalog-exclusions.json` for audit and stale-record rejection. Corresponding
+seed records and dependent rows are removed. Raw acquisition records remain
+available for provenance; they do not authorize public venue creation.
+
+Tasstipset is now **feature enrichment only**. It can match an existing,
+independently sourced Restaurant, Bakery, Café, Coffee shop/Coffeeshop or Specialty
+coffee venue. It may add dog-friendly tags and a `dogFriendly` source fact with
+policy text and attribution. It cannot add venues, change categories, descriptions,
+websites, lifecycle or evidence scores, or nominate discovery candidates.
+Unknown, lodging, shop, park, bar and pub source categories are rejected.
+Explicit hotel restaurants remain eligible when independently classified as food
+venues. Unknown matches are skipped; multiple matches abstain; coordinate matches
+must be within 200 metres. Repeated syncs are idempotent.
+
+`motkarta/dog_friendly.py` defines allowed targets and feature writes.
+`scripts/fetch_tasstipset_dog_places.py` owns matching; curated imports use the same
+path. Catalog fact enrichment also checks target types. Both concierge adapters,
+the list/map sanitizer, public API and seeds apply the catalog exclusions.
+Tasstipset-only primary sources and the recorded removed IDs cannot return via
+stale assets or D1 IDs. This does not modify source acquisition archives or apply
+production database/index changes.
+
+The original hostel bug had two causes: lodging was admitted by the scraper's
+food guard, and sync coerced unsupported kinds to Restaurant. The sync also
+raised specialist-guide evidence. History from `11b02b4`, `1f5b6e0` and `1ab8ede`
+was used to restore only still-matching Tasstipset changes: 283 guide-evidence
+values and 157 evidence labels. Dog-friendly tags, retained venue IDs and other
+subsequent edits remain intact. Data inputs are corrected; scorer/model formulas,
+versions, event schemas and privacy boundaries are unchanged. No training occurs.
+
+Run `npm run test:gate` after refreshes and before push/build. Regression tests
+check zero excluded public/seed records, D1/fallback guards, allowed venue types,
+unchanged non-dog fields, idempotence, ambiguity and distance rejection.
+Coverage now evaluates existing eligible reference venues rather than requiring
+Tasstipset to create unmatched venues: 150/167 existing references are tagged
+(89.8%); total-directory coverage remains separately reported at 53.8%.
+There are 164 dog-friendly catalog venues, zero Tasstipset-only venues and zero
+Tasstipset-tagged venues of disallowed types. The old whole-directory 60% gate
+was incompatible with enrichment-only use; the same threshold now applies to
+eligible existing venues, alongside strict source/type invariants.
+
+Rollback requires reverting the policy/callers and restoring the removed records,
+seed rows and audited evidence changes together. Never restore only the data
+while leaving contradictory import or public admission rules in place.
+
+## Environment setup
+
+### Removing and restoring places (2026-09-16)
+
+1. Open `/admin` with an authenticated admin session. The queue defaults to
+   **Alla / All**; search by name, address or D1 ID (Enter submits the search).
+2. Check the identity and enter a review note. **Ta bort från kartan / Remove
+   from map** confirms the named venue as closed/wrong category. This sets
+   `candidate` + `closed_wrong_category` through the existing review endpoint.
+3. **Borttagna / Removed** lists those records. **Återställ / Restore** confirms
+   returning one to baseline and clears the D1 validation label. Evidence and
+   review history remain. Recheck any independent closure in the static source;
+   restoration cannot override that closure or grant hidden-gem status.
+
+Removal affects new public page loads and concierge requests without a static
+catalog rebuild. Already-open pages need a reload. Search operates on D1 records;
+static-only venues need an identity-preserving D1 import before admin review.
+The supplied catalog already labels Arirang closed, so the public sanitizer now
+excludes it. Belgobarens bakficka has no static closure label; this change adds
+the removal capability without changing that venue's production status.
+
+The public loader performs one small, uncached D1 status query per page load.
+If D1/status is unavailable (including quota exhaustion), the public catalog
+shows unavailable rather than bypassing removals. Monitor availability and D1
+read usage. Deploy the frontend and `/api/place-visibility` function together;
+no new schema migration is required beyond the existing lifecycle/admin schema.
+The concierge preview continues to use its existing SELECT-only query allowlist.
+
+Tests cover actual SQLite migrations and remove/restore review writes, auth,
+404s, audit retention, search within removed records, separate ID namespaces,
+branches, aliases, stale snapshots, read failures, and desktop/mobile controls.
+No production data writes, paid inference or deployment are part of this repair.
+Rollback requires reverting both public admission code and its client/endpoint
+callers together; a code rollback must not be used to bypass a valid closure.
+
+From the repository root:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-python.txt
+npm ci
+```
+
+The repository expects Node 22.13 or later and the Python dependencies declared
+in `requirements-python.txt`.
+
+If the managed environment injects an unwritable `NPM_CONFIG_CACHE`, use the
+repository-local `.npmrc` cache by unsetting only that variable for the command:
+
+```bash
+env -u NPM_CONFIG_CACHE npm ci
+```
+
+Do not change global `HOME` or system-level npm configuration.
+
+## Baseline validation
+
+Before changing ML code:
+
+```bash
+.venv/bin/python -m pytest -q
+npm test
+npm run typecheck
+```
+
+Record pre-existing failures. Do not claim a regression was introduced or fixed
+without comparing to baseline.
+
+## Preparing residual-model input
+
+Create an enriched CSV with the required columns documented in
+[data contracts](data-contracts.md). Preserve identity and provenance columns.
+
+Minimum header:
+
+```text
+name,platform_rating,review_count,price_level,latitude,longitude,category,cuisine,district,chain_status
+```
+
+Before training, check:
+
+- Duplicate venue identities
+- Stockholm municipality boundary compliance for every curated, scraped and
+  candidate-review source row
+- Rating range and missing target values
+- Negative review counts
+- Coordinate validity
+- Cuisine/category normalization
+- Chain-status vocabulary
+- Capture dates and source terms
+- Commercial-data quarantine destination
+
+Tasstipset and other country-wide directories may be crawled as acquisition
+inputs, but only records passing
+`motkarta.stockholm_boundary.is_stockholm_municipality_place` may enter
+`public/data/places.json`, the lifecycle candidate queue, model training inputs
+or the RAG concierge corpus.
+
+Never commit raw licensed or personal datasets unless their license and repository
+policy explicitly permit it.
+
+## Running the residual model
+
+```bash
+.venv/bin/python scripts/model_discovery.py \
+  enriched_stockholm_places.csv \
+  --output data/stockholm_discovery_scores.csv \
+  --max-folds 5 \
+  --interval-coverage 0.9
+```
+
+Expected console output includes model version, validation strategy, MAE and RMSE.
+
+Expected CSV fields are listed in [data contracts](data-contracts.md).
+
+## Post-run checks
+
+Reject or investigate the run if:
+
+- Any row lacks a fold, model version or OOF prediction.
+- Predictions are clipped to 1–5; only clipped values are available for validation.
+- The validation strategy unexpectedly uses shuffled fallback.
+- MAE/RMSE changes materially without an explained data or model change.
+- One district/cuisine dominates top candidates.
+- Confidence appears high while error radii are implausibly narrow.
+- Candidate reasons omit evidence gaps.
+- Platform fields appear in intrinsic quality/evidence exports.
+
+Manually inspect samples from:
+
+- Highest positive residuals
+- Most negative residuals
+- Widest error bands
+- Each cuisine and district slice
+- New/low-review venues
+- Chains and unknown chain status
+
+## Running ranking evaluation
+
+Place the scored CSV at the path expected by the script or adjust the invocation
+through a reviewed code change:
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/evaluate_ranking_experiment.py
+```
+
+If no independent outcome column exists, `hypothesis_confirmed` must be null.
+Representation metrics remain descriptive, not proof of satisfaction.
+
+## Running dataset drift & fairness evaluation
+
+Compare monthly catalog updates or pipeline exports against the verified baseline:
+
+```bash
+PYTHONPATH=. .venv/bin/python -m motkarta.drift \
+  --baseline public/data/places.json \
+  --current .tmp/new_places.json \
+  --output .tmp/drift_report.json
+```
+
+The script exits with code 0 if status is `PASS` or `WARNING`, and code 1 if `FAIL` (due to critical PSI drift > 0.25 or representation gate violation).
+
+Drift gates enforced:
+- **PSI (Population Stability Index)**: `< 0.10` (STABLE), `0.10–0.25` (MODERATE_DRIFT), `> 0.25` (CRITICAL_DRIFT).
+- **Outer-City Ratio**: $\ge 30\%$ of venues must reside outside the central inner-city core.
+- **Independent Ratio**: $\ge 90\%$ of venues must be verified independent businesses.
+- **Cuisine Diversity**: Shannon entropy across cuisine tags must be $\ge 2.5$.
+
+## Running offline LTR training & benchmarking
+
+To test, train, and evaluate the debiased learning-to-rank pipeline offline:
+
+```bash
+.venv/bin/pytest tests_python/test_ltr.py -v
+```
+
+This runs the simulation benchmark, verifies feature safety quarantine, evaluates Inverse Propensity Scoring (IPS) weights, and validates counterfactual NDCG.
+
+## Structural anomaly operation
+
+`process_motkarta_gems()` runs inside the pipeline. Treat its flagged rows as a
+review/data-quality queue. Appropriate actions include:
+
+- Confirm unusually rich or sparse OSM tagging.
+- Check duplicates or coordinate errors.
+- Investigate a distinctive venue format.
+- Request missing evidence.
+
+Never convert `is_structural_anomaly` into `is_hidden_gem`.
+
+## Database migration
+
+The event schema is introduced by:
+
+```text
+drizzle/0007_pale_mikhail_rasputin.sql
+```
+
+Event collection controls are introduced by:
+
+```text
+drizzle/0009_breezy_tomas.sql
+```
+
+For new schema changes:
+
+```bash
+npm run db:generate
+npm test
+npm run typecheck
+```
+
+Inspect generated SQL and snapshot changes. Do not apply a production D1
+migration merely because it was generated; production writes require explicit
+deployment scope and a rollback/backup plan.
+
+Current shadow-mode event collection decisions:
+
+- Position indexing convention: zero-based.
+- Impression visibility rule: rendered result rows count as impressions.
+- Recommendation-mode vocabulary: `search`, `map`, `list`, `concierge`,
+  `nearby`, `saved`, `curated`, `hidden_gems`.
+- Session identifier: browser session storage.
+- Anonymous identifier rotation: 30 days.
+- Retention: default 180 days; endpoint configuration is bounded to 7-365 days.
+- Deduplication: `idempotency_key` plus `INSERT OR IGNORE`; impression keys
+  include a per-result-set identity and a hash of the complete structured
+  context so returning to a previous filter records a distinct exposure.
+- Query context: controlled structured buckets only; raw query text and display
+  labels under allowlisted keys are rejected.
+
+Outcome attribution window and deletion automation remain future decisions before
+any behavioral training dataset is built.
+
+## Shadow event collection operation
+
+Frontend instrumentation posts batches to:
+
+```text
+POST /api/recommendation-events
+```
+
+The endpoint validates controlled vocabularies, privacy-minimized query context,
+model version, zero-based impression positions, idempotency keys and retention
+window. Query-context values must match their controlled domains; new or
+uncategorized cuisines are bucketed as `other` by frontend instrumentation. The
+endpoint also rejects cross-origin browser writes unless the origin is the
+request origin or appears in `RECOMMENDATION_EVENT_ALLOWED_ORIGINS`, can require
+`RECOMMENDATION_EVENT_INGESTION_TOKEN`, and applies an in-memory per-client
+write quota controlled by `RECOMMENDATION_EVENT_RATE_LIMIT_PER_MINUTE`. Without
+a D1 binding it returns `source: shadow` and does not persist.
+
+Admin-only data-quality reporting is available at:
+
+```text
+GET /api/recommendation-events
+```
+
+The report summarizes event counts, event/mode distributions, missing impression
+positions, missing idempotency keys, missing receipt/schema/privacy/retention
+metadata, expired rows and whether the shadow dataset is structurally ready for
+deeper analysis. `qualityReady` does not authorize ranker training by itself.
+
+## Full release validation
+
+```bash
+.venv/bin/python -m pytest -q
+npm test
+npm run typecheck
+npm run build
+git diff --check
+```
+
+Expected state for the documented implementation:
+
+- Python tests pass.
+- JavaScript tests pass.
+- Typecheck passes.
+- Production build passes.
+- A Vite large-chunk warning may remain; it is not an ML failure but should be tracked separately.
+
+## Model version changes
+
+Bump `MODEL_VERSION` in `scripts/model_discovery.py` when any of these change:
+
+- Target definition
+- Feature list or normalization
+- Imputation/encoding
+- Spatial grouping/fold construction
+- Estimator or hyperparameters
+- Residual interval calculation
+- Confidence transform
+- Output semantics
+
+Update the model card, docs, tests and any downstream allowlist together.
+
+## Rollback
+
+### Offline model
+
+Rollback means regenerating candidates with the prior code/data/model version and
+restoring the prior output snapshot. Never relabel new predictions with an old version.
+
+### Ranking policy
+
+Keep the previous deterministic weights/version available. If guardrails fail,
+restore the previous scorer/ranker configuration and retain failed-version events
+for diagnosis.
+
+### Event collection
+
+If malformed or privacy-sensitive events are detected:
+
+1. Disable ingestion.
+2. Preserve only the minimum evidence needed to diagnose safely.
+3. Identify affected interval/model/schema version.
+4. Quarantine invalid events from training.
+5. Apply retention/deletion requirements.
+6. Add a regression test and update this runbook.
+
+## Troubleshooting
+
+| Symptom | Likely cause | Action |
+| --- | --- | --- |
+| `Missing required discovery-model columns` | Input contract drift | Fix upstream export; do not silently default target/features |
+| Fewer than four rows | Filter too narrow/test fixture too small | Expand cohort or use a non-ML path |
+| Shuffled-fold fallback | All rows mapped to one approximate cell | Verify coordinates and cohort; document if intentional |
+| Unknown categorical values | New cuisine/category vocabulary | Encoder tolerates them at prediction, but normalize and review coverage |
+| Narrow intervals and excellent error | Leakage or duplicate venues | Recheck entity resolution, folds and future-derived features |
+| Many anomalies | Changed OSM completeness/distribution | Treat as data drift; never increase hidden-gem promotion |
+| `hypothesis_confirmed: null` | No independent outcomes | Correct behavior; collect/attach valid labels |
+| Concierge returns ungrounded text | Retrieval/context or prompt regression | Stop release, inspect source packet and grounding tests |
+| `drizzle-kit: not found` | Node dependencies absent | Run `npm ci` in the repo |
+
+## Operational artifacts not yet implemented
+
+Future work should add:
+
+- Durable JSON run manifest
+- Serialized model artifact and checksum
+- Feature/slice report
+- Candidate review report
+- Drift comparison against prior run
+- Event-quality dashboard
+- Model registry or immutable artifact storage
+
+## Concierge RAG operations (activated in production)
+
+The [Concierge runbook](concierge-rag.md#local-operations-and-activation) documents
+production configuration, canonical corpus export, dry-run indexing, explicit
+apply budgets, metadata-index prerequisites, verified manifests, timeouts and
+rollback. Production `wrangler.toml` operates in `hybrid` retrieval with
+`constrained` Gemma 4 synthesis over the verified
+`motkarta-concierge-preview-v1` index.
+
+The deterministic RAG quality and capacity gate is part of the Python suite and
+can be isolated with:
+
+```bash
+.venv/bin/python -m pytest -q tests_python/test_concierge_quality_gate.py
+```
+
+The gate must pass before a release, followed by the mandatory full
+`npm run test:gate`. A local pass does not authorize hybrid or synthesis
+promotion: attach authorized provider captures and independent review for live
+model quality, latency, and cost.
+
+Ordinary tests use mocks and need no provider credentials. Never run indexing
+`--apply` as part of routine validation. If rollback is required, follow the rollback sequence
+in [`concierge-rag.md`](concierge-rag.md): set `CONCIERGE_SYNTHESIS_MODE="template"` first,
+and `CONCIERGE_RETRIEVAL_MODE="lexical"` second.
+
+---
+
+## Admin Operations Playbook & Recurring Cadence SOP
+
+The web application provides an interactive **Admin Playbook & SOP** drawer directly inside `/admin` via the `📖 Guide & Rutiner (SOP)` toolbar button, as well as an animated, informative **Toast Notification System** detailing downstream ML and gate impacts for every manual operation.
+
+### 1. Recurring Cadence & Checklist
+
+#### Daily / As-Needed Tasks
+1. **Candidate Triage**:
+   - Access the `Kandidater` state tab.
+   - Inspect newly imported candidate rows from OSM, municipal food inspections, and curated submissions.
+   - Prioritize rows marked with `✨ X användartips`: these represent venues actively nominated by community visitors.
+   - Verify that candidates are independent businesses and comply with Stockholm municipality boundaries (`is_stockholm_municipality_place`). Commercial chains are strictly excluded.
+   - Check the evidence count: if the candidate satisfies the 2-signal independent threshold, promote to `verified` (`known_hidden_gem` or `known_mainstream`).
+
+2. **Duplicate Deduplication**:
+   - Review cards flagged with yellow duplicate boxes (`Möjlig dubblett`).
+   - If the candidate represents an existing venue already in the catalog: click `Slå ihop` (`merge_duplicate`). Evidence sources are transferred to the target venue, and a positive merge pair is logged in `admin_review_events` for ML deduplication model training.
+   - If the candidate is a distinct business (e.g. sister venue or shared building): click `Behåll separat` (`keep_separate`). This logs a negative match pair for model training and dismisses the duplicate alert.
+
+#### Weekly Tasks
+1. **Geographical District Resolution**:
+   - Access the `Saknar region` (`unresolved_region`) tab.
+   - Click `Lös saknade regioner` to batch-resolve broad Stockholm labels (`Stockholm`, `Stockholms län`, etc.) into specific districts (`Södermalm`, `Vasastan`, `Djurgården`, etc.) using coordinate boundary polygons.
+   - For remaining ambiguous coordinates, manually select the district from the dropdown.
+   - *Downstream ML Impact*: District attribution directly feeds the 30% outer-city representation gate in `motkarta.drift` and enables regional filtering in Concierge RAG.
+
+2. **Venue Enrichment & Photo Scraping**:
+   - Access the `Behöver input` (`needs_input`) tab for places lacking official websites or addresses.
+   - Enter the venue's official homepage and click `Spara & hämta bild`.
+   - The system validates the URL, extracts OpenGraph metadata (`og:image`), and inserts the website and photo as an official source signal with confidence `0.9`.
+
+#### Monthly Catalog Maintenance
+1. **Monthly Google Places Metadata Sync**:
+   - Run dry-run first to inspect changes:
+     ```bash
+     python scripts/google_places_monthly_sync.py --dry-run
+     ```
+   - Run live sync to refresh opening hours, coordinates, and store quarantined commercial platform metadata for residual modeling:
+     ```bash
+     python scripts/google_places_monthly_sync.py
+     ```
+2. **Specialty Coffee & Curated Guide Sync**:
+   - Run the curated source synchronization script:
+     ```bash
+     node scripts/sync-curated-sources.mjs
+     ```
+   - Confirms adherence to the Specialty Coffee Gold Standard list (15 curated venues, zero commercial chains).
+3. **Dataset Drift & Fairness Monitoring**:
+   - Run the automated drift audit against the verified baseline:
+     ```bash
+     python -m motkarta.drift --baseline public/data/places.json --current public/data/places.json
+     ```
+   - Verifies PSI < 0.10, outer-city ratio $\ge 30\%$, independent ratio $\ge 90\%$, and cuisine Shannon entropy $\ge 2.5$.
+4. **Sync Review Labels (Automated)**:
+   - Review checkpoints are written automatically after each admin decision (`auto_review` in `admin_label_exports`).
+   - Monthly enrichment runs `npm run sync:labels` and commits `data/human_validation_labels.json`.
+   - For ad-hoc refresh, run `npm run sync:labels` locally or use `/admin` → `Ladda ner backup (JSON)`.
+   - These human validation labels serve as ground-truth for offline Learning-to-Rank (LTR) retraining and candidate classifier validation.
+5. **Mandatory 4-Tier Full Test Coverage Gate**:
+   - Before committing or deploying any changes:
+     ```bash
+     npm run test:gate
+     ```
+   - All 4 tiers (TypeScript static typecheck, JS unit tests, Python pytest suite, and Playwright E2E suite) must pass with zero failures.
+
+---
+
+### 2. Hidden Gem Promotion: The Double-Lock Policy
+
+Motkarta enforces a strict **Double-Lock Policy** for hidden-gem elevation to prevent marketing manipulation, review spam, and false positives:
+
+- **Lock 1 (Community Discovery)**: Visitors nominate beloved craft spots by clicking `✨ Tipsa som dold pärla` in the place sheet. This provides immediate personal gratification (saved locally to `motkarta_user_nominated_gems`) and emits an anonymous telemetry event (`recommendation_mode: "hidden_gems"`). These are aggregated in admin review as `✨ X användartips`.
+- **Lock 2 (Independent Evidence Gate)**: Admin promotion buttons for `known_hidden_gem` are conditionally enabled *only* when `candidate.evidenceGate.canPromoteHiddenGem` evaluates to true (at least 2 independent verified signals such as OSM, municipal inspection, official website, or curated guide). Commercial reviews (Google, TripAdvisor, Yelp) are quarantined and strictly prohibited from satisfying this requirement.
+- **Dynamic Runtime Guard**: Even after admin approval, `evaluateHiddenGemGates` in `lib/scoring.ts` continuously monitors catalog entries. If an establishment becomes a commercial chain or loses active independent verification, the hidden-gem badge is automatically stripped at runtime.
+
+---
+
+### 3. In-App Admin Transparency & ML Toasts
+
+To ensure that administrative operations are never opaque, the admin interface surfaces:
+- **Contextual State Banners**: A guidance strip beneath the state filters explaining what entries belong in each view and what action to take.
+- **Transparent Toasts**: Every state change, duplicate resolution, district update, and export displays a rich toast notification explaining both the administrative result and the exact downstream ML and ranking consequence:
+  - *Hidden Gem*: Details ranking boosts in hidden gems mode and Concierge RAG while confirming commercial quarantine.
+  - *Mainstream*: Details verified publishing and standard Bayesian quality score computation.
+  - *Duplicate Merge*: Explains evidence migration into the master entity and recording of training labels for the deduplication model.
+  - *District Update*: Details contribution to outer-city representation in the drift monitor.

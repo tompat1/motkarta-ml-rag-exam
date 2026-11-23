@@ -10,7 +10,7 @@
 
 ### One-Command Full Exam Setup & Verification
 
-Run this single command from the repository root to create `.venv`, install Python dependencies, regenerate all 8 real-data SVG charts & architecture diagrams, re-execute all 4 Jupyter notebooks, and verify all 67 automated tests (54 Python + 13 Node):
+Run this single command from the repository root to create `.venv`, install Python dependencies, regenerate all 9 real-data SVG charts & architecture diagrams, re-execute all 4 Jupyter notebooks, and verify all 67 automated tests (54 Python + 13 Node):
 
 ```bash
 bash scripts/verify_exam.sh
@@ -82,6 +82,11 @@ See [`notebooks/04_full_vector_rag_and_llm_synthesis.ipynb`](notebooks/04_full_v
 
 ![Full Vector RAG Real-Model Trial and Guardrails](figures/06_full_rag_trial_and_guardrails.svg)
 
+### Stage 7 — RAG Triad & Latency Comparison (Baseline v1 vs. Optimized RAG)
+Side-by-side comparison of the four RAGAs pillars (**Context Recall**, **Context Precision**, **Faithfulness**, **Answer Relevance**) plus **Stage-by-Stage Latency vs. Runtime SLAs**, built from the 128-query labeled retrieval benchmark (`docs/ml/concierge-evaluation.md`), the 32-call Gemma-4 guardrail trial (`docs/ml/concierge-real-model-trial.md`), and the live provider capture (`data/rag_provider_capture.json`):
+
+![RAG Triad and Latency Comparison](figures/07_rag_triad_and_latency_comparison.svg)
+
 ---
 
 ## 5. Controlled Abstention & Recovery Policy (`265320a`)
@@ -112,7 +117,7 @@ A production RAG system must know **when and why to abstain** rather than guessi
 ```text
 motkarta-ml-rag-exam/
 ├── notebooks/                   # 4 executed Jupyter notebooks (EDA → Baselines/LTR → Hybrid RAG)
-├── figures/                     # 8 vector SVG charts & diagrams generated directly from real data
+├── figures/                     # 9 vector SVG charts & diagrams generated directly from real data
 ├── data/
 │   ├── places_slice.json        # Stratified 271-venue slice + full 3,140-venue catalog summary
 │   ├── stockholm_food_places_scored.csv  # 3,192 venues × 41 engineered ML features
@@ -127,7 +132,7 @@ motkarta-ml-rag-exam/
 ├── execution/                   # Vectorize indexing (index_concierge.py) & RAG evaluation harnesses
 ├── docs/ml/                     # Full architecture, data contracts, holdout & evaluation docs
 ├── scripts/
-│   ├── generate_exam_figures.py # Re-generates all 8 SVG figures & diagrams from data/
+│   ├── generate_exam_figures.py # Re-generates all 9 SVG figures & diagrams from data/
 │   └── build_and_execute_notebooks.py
 ├── tests_python/                # Python ML, scoring, LTR, drift, outlier & RAG unit tests
 └── tests/                       # TypeScript scoring, hybrid search, RAG & rate-gate tests

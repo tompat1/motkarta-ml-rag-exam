@@ -588,6 +588,132 @@ def fig6_full_rag_trial_and_guardrails() -> Path:
     return out
 
 
+def fig7_rag_triad_and_latency_comparison(capture: dict) -> Path:
+    metrics = capture["metrics"]
+    live_faith = metrics["faithfulness"] * 100.0
+    live_rel = metrics["answerRelevance"] * 100.0
+    live_med_ms = int(metrics["providerLatencyMedianMs"])
+    live_p95_ms = int(metrics["providerLatencyP95Ms"])
+
+    w, h = 1120, 510
+    lines = svg_header(
+        w, h,
+        "7. RAG Triad & Latency Comparison — Baseline (Historical v1) vs. Optimized Hybrid RAG",
+        "Grouped bar audit: 128-query labeled retrieval benchmark (concierge-evaluation.md) + live Cloudflare Vectorize & Gemma-4 timings (concierge-real-model-trial.md)",
+    )
+
+    # Left panel: RAG Triad Grouped Bar Chart
+    lx, ly, lw, lh = 32, 84, 594, 386
+    lines.append(f'  <rect x="{lx}" y="{ly}" width="{lw}" height="{lh}" fill="#FFFFFF" stroke="{GRID}"/>')
+    lines.append(f'  <text x="{lx+16}" y="{ly+24}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="{INK}">RAG Triad &amp; Safety — Baseline (v1) vs. Optimized RAG (%)</text>')
+
+    # Legend (left panel)
+    leg_y = ly + 42
+    lines.append(f'  <rect x="{lx+16}" y="{leg_y-9}" width="12" height="10" fill="#CBD5E1" stroke="#64748B" stroke-width="0.8"/>')
+    lines.append(f'  <text x="{lx+33}" y="{leg_y}" font-family="ui-sans-serif, sans-serif" font-size="10" fill="{MUTED}">Baseline (Historical v1)</text>')
+    lines.append(f'  <rect x="{lx+166}" y="{leg_y-9}" width="12" height="10" fill="{EMERALD}"/>')
+    lines.append(f'  <text x="{lx+183}" y="{leg_y}" font-family="ui-sans-serif, sans-serif" font-size="10" fill="{MUTED}">Optimized RAG (128q fixture)</text>')
+    lines.append(f'  <rect x="{lx+348}" y="{leg_y-9}" width="12" height="10" fill="{PURPLE}"/>')
+    lines.append(f'  <text x="{lx+365}" y="{leg_y}" font-family="ui-sans-serif, sans-serif" font-size="10" fill="{MUTED}">Live Capture / Guardrail</text>')
+
+    bar_x = lx + 196
+    bar_max_w = 310
+    grid_top = ly + 56
+    grid_bot = ly + 356
+    for pct in (0, 25, 50, 75, 100):
+        gx = bar_x + int((pct / 100.0) * bar_max_w)
+        lines.append(f'  <line x1="{gx}" y1="{grid_top}" x2="{gx}" y2="{grid_bot}" stroke="{GRID}" stroke-width="1" stroke-dasharray="3,3"/>')
+        lines.append(f'  <text x="{gx}" y="{grid_bot+15}" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.5" fill="{MUTED}">{pct}%</text>')
+
+    # (label, sublabel, base_val_or_None, opt_val, opt_color, delta_text)
+    triad_rows = [
+        ("Context Recall", "Recall@50 (84 answerable)", 81.0, 92.9, EMERALD, "+11.9pp"),
+        ("Context Precision", "NDCG@5 (84 answerable)", 75.0, 92.9, EMERALD, "+17.9pp"),
+        ("Exact-Name Precision", "Top-1 hit (12 exact queries)", 33.3, 100.0, EMERALD, "+66.7pp"),
+        ("Safe Abstention", "Out-of-scope (44 queries)", 0.0, 100.0, EMERALD, "+100pp"),
+        ("Faithfulness", "Live E2E vs. Gemma-4 shipped", live_faith, 100.0, PURPLE, "0/32 hall."),
+        ("Answer Relevance", "Live 12q capture (intent)", None, live_rel, PURPLE, "9/12 live"),
+    ]
+
+    for i, (label, sub, base_v, opt_v, opt_col, note) in enumerate(triad_rows):
+        ry = grid_top + 10 + i * 48
+        lines.append(f'  <text x="{bar_x-12}" y="{ry+12}" text-anchor="end" font-family="ui-sans-serif, sans-serif" font-size="11" font-weight="700" fill="{INK}">{html.escape(label)}</text>')
+        lines.append(f'  <text x="{bar_x-12}" y="{ry+25}" text-anchor="end" font-family="ui-sans-serif, sans-serif" font-size="9.3" fill="{MUTED}">{html.escape(sub)}</text>')
+
+        # Baseline bar (or live comparison bar for Faithfulness)
+        if base_v is not None:
+            bw_base = max(2, int((base_v / 100.0) * bar_max_w)) if base_v > 0 else 2
+            base_fill = "#CBD5E1" if i < 4 else "#C4B5FD"
+            base_stroke = "#64748B" if i < 4 else PURPLE
+            lines.append(f'  <rect x="{bar_x}" y="{ry+2}" width="{bw_base}" height="12" fill="{base_fill}" stroke="{base_stroke}" stroke-width="0.7"/>')
+            lines.append(f'  <text x="{bar_x+bw_base+5}" y="{ry+11.5}" font-family="ui-monospace, monospace" font-size="9.2" fill="{MUTED}">{base_v:.1f}%</text>')
+        else:
+            lines.append(f'  <text x="{bar_x+4}" y="{ry+11.5}" font-family="ui-monospace, monospace" font-size="9" fill="{MUTED}">(no v1 live baseline)</text>')
+
+        # Optimized / Shipped bar
+        bw_opt = int((opt_v / 100.0) * bar_max_w)
+        lines.append(f'  <rect x="{bar_x}" y="{ry+17}" width="{bw_opt}" height="13" fill="{opt_col}"/>')
+        lines.append(f'  <text x="{bar_x+bw_opt+5}" y="{ry+27}" font-family="ui-monospace, monospace" font-size="9.8" font-weight="700" fill="{opt_col}">{opt_v:.1f}% ({html.escape(note)})</text>')
+
+    # Right panel: Latency Breakdown (Median vs P95 vs SLA)
+    rx, ry0, rw, rh = 644, 84, 444, 386
+    lines.append(f'  <rect x="{rx}" y="{ry0}" width="{rw}" height="{rh}" fill="#FFFFFF" stroke="{GRID}"/>')
+    lines.append(f'  <text x="{rx+16}" y="{ry0+24}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="{INK}">Stage Latency — Median vs. P95 &amp; SLA (ms)</text>')
+
+    # Legend (right panel)
+    lines.append(f'  <rect x="{rx+16}" y="{leg_y-9}" width="12" height="10" fill="{BLUE}"/>')
+    lines.append(f'  <text x="{rx+33}" y="{leg_y}" font-family="ui-sans-serif, sans-serif" font-size="10" fill="{MUTED}">Median (ms)</text>')
+    lines.append(f'  <rect x="{rx+114}" y="{leg_y-9}" width="12" height="10" fill="{GOLD}"/>')
+    lines.append(f'  <text x="{rx+131}" y="{leg_y}" font-family="ui-sans-serif, sans-serif" font-size="10" fill="{MUTED}">P95 (ms)</text>')
+    lines.append(f'  <line x1="{rx+196}" y1="{leg_y-10}" x2="{rx+196}" y2="{leg_y+1}" stroke="{ACCENT}" stroke-width="2" stroke-dasharray="2,2"/>')
+    lines.append(f'  <text x="{rx+204}" y="{leg_y}" font-family="ui-sans-serif, sans-serif" font-size="10" fill="{MUTED}">Runtime SLA deadline</text>')
+
+    lat_x = rx + 136
+    lat_w = 226
+    max_ms = 4500.0
+    for ms_tick in (0, 1000, 2000, 3000, 4000):
+        gx = lat_x + int((ms_tick / max_ms) * lat_w)
+        lines.append(f'  <line x1="{gx}" y1="{grid_top}" x2="{gx}" y2="{grid_bot}" stroke="{GRID}" stroke-width="1" stroke-dasharray="3,3"/>')
+        lbl = f"{ms_tick//1000}s" if ms_tick > 0 else "0"
+        lines.append(f'  <text x="{gx}" y="{grid_bot+15}" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.5" fill="{MUTED}">{lbl}</text>')
+
+    # (stage, sub, median_ms, p95_ms, sla_ms_or_None)
+    lat_rows = [
+        ("Query Embed", "bge-m3 (128q)", 262, 615, 1200),
+        ("Vector Search", "Vectorize (128q)", 440, 590, 800),
+        ("Retrieval Total", "Embed + Vector", 713, 1090, 2000),
+        ("LLM Synthesis", "Gemma-4 (32q)", 1239, 4106, 2000),
+        ("Live E2E HTTP", "Prod capture (12q)", live_med_ms, live_p95_ms, None),
+    ]
+
+    for i, (stage, sub, med_ms, p95_ms, sla_ms) in enumerate(lat_rows):
+        y = grid_top + 16 + i * 58
+        lines.append(f'  <text x="{lat_x-10}" y="{y+12}" text-anchor="end" font-family="ui-sans-serif, sans-serif" font-size="11" font-weight="700" fill="{INK}">{html.escape(stage)}</text>')
+        lines.append(f'  <text x="{lat_x-10}" y="{y+25}" text-anchor="end" font-family="ui-sans-serif, sans-serif" font-size="9.3" fill="{MUTED}">{html.escape(sub)}</text>')
+
+        med_w = max(4, int((min(med_ms, max_ms) / max_ms) * lat_w))
+        p95_clamped = p95_ms > max_ms
+        p95_w = max(4, int((min(p95_ms, max_ms) / max_ms) * lat_w))
+
+        lines.append(f'  <rect x="{lat_x}" y="{y+2}" width="{med_w}" height="12" fill="{BLUE}"/>')
+        lines.append(f'  <text x="{lat_x+med_w+5}" y="{y+11.5}" font-family="ui-monospace, monospace" font-size="9.5" font-weight="700" fill="{BLUE}">{med_ms:,} ms</text>')
+
+        lines.append(f'  <rect x="{lat_x}" y="{y+17}" width="{p95_w}" height="12" fill="{GOLD}"/>')
+        p95_lbl = f"{p95_ms:,} ms →" if p95_clamped else f"{p95_ms:,} ms"
+        lines.append(f'  <text x="{lat_x+p95_w+5}" y="{y+26.5}" font-family="ui-monospace, monospace" font-size="9.5" fill="{MUTED}">{p95_lbl}</text>')
+
+        if sla_ms is not None:
+            sx = lat_x + int((sla_ms / max_ms) * lat_w)
+            lines.append(f'  <line x1="{sx}" y1="{y-2}" x2="{sx}" y2="{y+33}" stroke="{ACCENT}" stroke-width="1.8" stroke-dasharray="3,2"/>')
+            lines.append(f'  <text x="{sx}" y="{y+43}" text-anchor="middle" font-family="ui-monospace, monospace" font-size="8.5" fill="{ACCENT}">SLA {sla_ms:,}ms</text>')
+
+    lines.append(f'  <text x="32" y="{h-14}" font-family="ui-monospace, monospace" font-size="10" fill="{MUTED}">Provenance: Context Recall &amp; Precision from 128-query labeled fixture (no human labels on live 3,143-venue catalog yet); latencies from sequential REST trial &amp; live HTTP capture.</text>')
+    lines.append("</svg>")
+    out = FIG_DIR / "07_rag_triad_and_latency_comparison.svg"
+    out.write_text("\n".join(lines), encoding="utf-8")
+    return out
+
+
 def main() -> None:
     scored = pd.read_csv(DATA_DIR / "stockholm_food_places_scored.csv")
     slice_json = json.loads((DATA_DIR / "places_slice.json").read_text(encoding="utf-8"))
@@ -603,6 +729,7 @@ def main() -> None:
         fig5a_rag_query_sequence(),
         fig5_rag_live_evaluation(capture),
         fig6_full_rag_trial_and_guardrails(),
+        fig7_rag_triad_and_latency_comparison(capture),
     ]
     for path in outputs:
         print(f"Generated {path.relative_to(ROOT)}")

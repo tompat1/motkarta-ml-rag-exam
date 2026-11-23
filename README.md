@@ -84,7 +84,30 @@ See [`notebooks/04_full_vector_rag_and_llm_synthesis.ipynb`](notebooks/04_full_v
 
 ---
 
-## 5. Repository Map
+## 5. Controlled Abstention & Recovery Policy (`265320a`)
+
+A production RAG system must know **when and why to abstain** rather than guessing or inventing answers. In Motkarta commit [`265320a`](https://github.com/tompat1/motkarta/commit/265320a919ad071f26d13ebba06a0a7a45ba4e3b) (`feat(concierge): implement abstention reasons for query responses and enhance user guidance`), the Concierge response contract (`concierge-response-v1`) was extended with a structured, backward-compatible `abstentionReason` taxonomy:
+
+| `abstentionReason` | Meaning | External Web Fallback Allowed? | User Recovery Guidance |
+| :--- | :--- | :---: | :--- |
+| `ambiguous_query` | Query lacks a dish, venue type, or area | No | Prompt user to add one concrete detail (e.g. *"pierogi in Södermalm"*) |
+| `no_verified_match` | Understood query, zero verified catalog hits | **Yes** | Offer filtered independent web search or broader Stockholm search |
+| `insufficient_evidence` | Requested detail/attribute not backed by catalog facts | **Yes** | State evidence gap explicitly; optionally run filtered external lookup |
+| `missing_location` | *"Near me"* query without user coordinates | No | Ask user to share location or name a Stockholm district |
+| `unsupported_live_hours` | Real-time *"open now"* check not verified in catalog | No | Explain live hours are unverified; advise checking the venue directly |
+| `outside_stockholm` | Request targets a city/area outside Stockholm scope | No | Clarify Stockholm-only geographic boundary |
+| `excluded_chain` | Request asks for an excluded commercial chain | No | Explain Motkarta's independent-venue policy |
+| `no_more_results` | Pagination reached the end of verified matches | No | Inform user all matching verified venues have been shown |
+| `catalog_unavailable` | D1/catalog read failure (`status: "unavailable"`) | No | Fail closed cleanly without resurrecting stale or unverified data |
+
+### Key Safety & UX Invariants
+- **Strict Fallback Gating**: Only `no_verified_match` and `insufficient_evidence` may trigger the filtered external-search fallback (`lib/concierge/response.ts`); missing context (`missing_location`, `ambiguous_query`), policy exclusions (`excluded_chain`, `outside_stockholm`), and unsupported live checks (`unsupported_live_hours`) never trigger unnecessary web searches.
+- **No Fake Confidence Percentages**: Clients use `abstentionReason` to surface an honest limitation and concrete next action — never converting raw cosine similarity or LLM self-assessment into an uncalibrated user-facing confidence percentage.
+- **Full-Stack Contract & Verification**: Implemented across `lib/concierge/contracts.ts`, `lib/concierge/response.ts`, `functions/api/concierge.ts`, `src/app/concierge-client.ts`, `src/components/ConciergeAnswerView.tsx`, canonical ML docs (`docs/ml/concierge-rag.md`, `docs/ml/data-contracts.md`), and covered by unit tests (`concierge-client.test.mjs`, `concierge-rag.test.mjs`, `concierge-web-fallback.test.mjs`, `concierge.test.mjs`).
+
+---
+
+## 6. Repository Map
 
 ```text
 motkarta-ml-rag-exam/

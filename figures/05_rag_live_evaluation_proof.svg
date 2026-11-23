@@ -5,7 +5,7 @@
   <rect x="32" y="80" width="252" height="66" fill="#FFFFFF" stroke="#141414" stroke-width="1.2"/>
   <text x="46" y="100" font-family="ui-monospace, monospace" font-size="10" font-weight="700" fill="#5C5852">VECTORIZE INDEX</text>
   <text x="46" y="124" font-family="ui-sans-serif, sans-serif" font-size="19" font-weight="800" fill="#141414">3,134 / 3,134</text>
-  <text x="46" y="139" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">bge-base-en-v1.5 (768d)</text>
+  <text x="46" y="139" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">bge-m3 (1,024d cosine)</text>
   <rect x="300" y="80" width="252" height="66" fill="#FFFFFF" stroke="#141414" stroke-width="1.2"/>
   <text x="314" y="100" font-family="ui-monospace, monospace" font-size="10" font-weight="700" fill="#5C5852">FAITHFULNESS</text>
   <text x="314" y="124" font-family="ui-sans-serif, sans-serif" font-size="19" font-weight="800" fill="#141414">75%</text>

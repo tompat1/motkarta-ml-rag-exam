@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 490" width="1120" height="490" role="img" aria-label="6. Full Vector RAG Real-Model Trial — bge-m3 Embeddings + Gemma-4 Constrained Synthesis">
+  <rect width="1120" height="490" fill="#FCFBF7" stroke="#141414" stroke-width="1.5"/>
+  <text x="32" y="38" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#141414">6. Full Vector RAG Real-Model Trial — bge-m3 Embeddings + Gemma-4 Constrained Synthesis</text>
+  <text x="32" y="58" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#5C5852">Measured Cloudflare Workers AI + Vectorize trial (docs/ml/concierge-real-model-trial.md): 197 embedding batches, 114,962 tokens, zero hallucinations shipped</text>
+  <rect x="32" y="90" width="520" height="368" fill="#FFFFFF" stroke="#E5E1D8"/>
+  <text x="48" y="116" font-family="ui-sans-serif, sans-serif" font-size="13" font-weight="700" fill="#141414">End-to-End Full RAG Verification Funnel</text>
+  <text x="48" y="146" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">1. Vectorize Index (bge-m3 1024d)</text>
+  <text x="536" y="146" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#059669">3,143 / 3,143 (100.0%)</text>
+  <rect x="48" y="153" width="320" height="14" fill="#F3F1EC"/>
+  <rect x="48" y="153" width="320" height="14" fill="#059669"/>
+  <text x="378" y="164" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">ID + SHA-256 hash verified</text>
+  <text x="48" y="204" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">2. Live Semantic Queries</text>
+  <text x="536" y="204" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#2563EB">128 / 128 (100.0%)</text>
+  <rect x="48" y="211" width="320" height="14" fill="#F3F1EC"/>
+  <rect x="48" y="211" width="320" height="14" fill="#2563EB"/>
+  <text x="378" y="222" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">100% HTTP 200 vector lookup</text>
+  <text x="48" y="262" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">3. Gemma-4 Synthesis API Calls</text>
+  <text x="536" y="262" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#7C3AED">32 / 32 (100.0%)</text>
+  <rect x="48" y="269" width="320" height="14" fill="#F3F1EC"/>
+  <rect x="48" y="269" width="320" height="14" fill="#7C3AED"/>
+  <text x="378" y="280" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">@cf/google/gemma-4-26b-a4b-it</text>
+  <text x="48" y="320" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">4. Strict Fact-ID Validator Pass</text>
+  <text x="536" y="320" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#059669">23 / 32 (71.9%)</text>
+  <rect x="48" y="327" width="320" height="14" fill="#F3F1EC"/>
+  <rect x="48" y="327" width="230" height="14" fill="#059669"/>
+  <text x="378" y="338" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">Exact placeId + grounded factIds</text>
+  <text x="48" y="378" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">5. Accepted Within 2s SLA</text>
+  <text x="536" y="378" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#D97706">22 / 32 (68.8%)</text>
+  <rect x="48" y="385" width="320" height="14" fill="#F3F1EC"/>
+  <rect x="48" y="385" width="220" height="14" fill="#D97706"/>
+  <text x="378" y="396" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">95.7% of accepted responses &lt; 2s</text>
+  <rect x="576" y="90" width="512" height="368" fill="#FFFFFF" stroke="#E5E1D8"/>
+  <text x="592" y="116" font-family="ui-sans-serif, sans-serif" font-size="13" font-weight="700" fill="#141414">Anti-Hallucination Guardrail Audit (32 Gemma-4 Calls)</text>
+  <text x="592" y="148" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Accepted — Grounded Fact-IDs</text>
+  <rect x="592" y="156" width="280" height="14" fill="#F3F1EC"/>
+  <rect x="592" y="156" width="201" height="14" fill="#059669"/>
+  <text x="882" y="167" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#059669">23/32</text>
+  <text x="592" y="182" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">Served as constrained LLM synthesis</text>
+  <text x="592" y="204" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Rejected — Empty Fact Selection</text>
+  <rect x="592" y="212" width="280" height="14" fill="#F3F1EC"/>
+  <rect x="592" y="212" width="61" height="14" fill="#D97706"/>
+  <text x="882" y="223" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#D97706">7/32</text>
+  <text x="592" y="238" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">Safe fallback to verified template</text>
+  <text x="592" y="260" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Rejected — Extra JSON Object</text>
+  <rect x="592" y="268" width="280" height="14" fill="#F3F1EC"/>
+  <rect x="592" y="268" width="8" height="14" fill="#D94E2A"/>
+  <text x="882" y="279" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#D94E2A">1/32</text>
+  <text x="592" y="294" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">Hallucinated entry blocked by validator</text>
+  <text x="592" y="316" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Rejected — Output Truncated</text>
+  <rect x="592" y="324" width="280" height="14" fill="#F3F1EC"/>
+  <rect x="592" y="324" width="8" height="14" fill="#D94E2A"/>
+  <text x="882" y="335" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#D94E2A">1/32</text>
+  <text x="592" y="350" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">finish_reason != stop blocked</text>
+  <text x="592" y="372" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Hallucinations Reached Users</text>
+  <rect x="592" y="380" width="280" height="14" fill="#F3F1EC"/>
+  <text x="882" y="391" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#141414">0/32</text>
+  <text x="592" y="406" font-family="ui-sans-serif, sans-serif" font-size="10" fill="#5C5852">Zero ungrounded venues or facts</text>
+  <text x="32" y="476" font-family="ui-monospace, monospace" font-size="10.5" fill="#5C5852">Live hybrid+constrained example (2026-11-22): query="äta husman" → retrievalMode=hybrid, synthesisMode=constrained, cards=[Pelikan, Husman, Bord], fallbackReasons=[]</text>
+</svg>

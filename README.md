@@ -1,6 +1,6 @@
 # Motkarta — End-to-End ML & Hybrid Vector RAG Portfolio
 
-> **Course Exam Repository**: From Exploratory Data Analysis (EDA) and Deterministic Quality Gates to Multi-Signal Scoring, Cross-Validated ML, and Production Hybrid Vector RAG over Stockholm's Independent Food Map (**3,140 published venues**, **3,134 indexed 768-dim vectors**).
+> **Course Exam Repository**: From Exploratory Data Analysis (EDA) and Deterministic Quality Gates to Multi-Signal Scoring, Cross-Validated ML, and Production Hybrid Vector RAG over Stockholm's Independent Food Map (**3,140 published venues**, **3,134 indexed 1,024-dim vectors**).
 
 ---
 
@@ -13,10 +13,10 @@
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 1. Regenerate all 5 real-data SVG charts (deterministic)
+# 1. Regenerate all 6 real-data SVG charts (deterministic)
 python3 scripts/generate_exam_figures.py
 
-# 2. Re-execute all 3 exam Jupyter notebooks
+# 2. Re-execute all 4 exam Jupyter notebooks
 python3 scripts/build_and_execute_notebooks.py
 
 # 3. Run Python ML & RAG test suite (54 tests)
@@ -49,10 +49,10 @@ flowchart LR
 
   subgraph RAG["3. Hybrid Vector RAG (Production)"]
     DOC["Fact-Grounded Venue<br/>Document Serializer"]
-    EMB["Cloudflare Workers AI<br/>bge-base-en-v1.5 (768-dim)"]
+    EMB["Cloudflare Workers AI<br/>bge-base-en-v1.5 (1,024-dim)"]
     VEC["Cloudflare Vectorize<br/>3,134 / 3,134 Indexed Vectors"]
     RET["Hybrid Retrieval Fusion<br/>Intent + Structured Filters<br/>+ Vector Cosine + Lexical"]
-    SYN["Constrained Synthesis<br/>Gemma-3-12b-it / Verified Template<br/>(Zero Hallucinated Venues)"]
+    SYN["Constrained Synthesis<br/>Gemma-4-26b-a4b-it / Verified Template<br/>(Zero Hallucinated Venues)"]
   end
 
   OSM --> GATES
@@ -99,7 +99,7 @@ Open any notebook directly on GitHub or JupyterLab — every cell has been execu
 ![Baseline vs Multi-Signal and Cross-Validated Residuals](figures/03_baseline_vs_multisignal_and_ltr.svg)
 
 ### Stage 4 — Semantic Document Vector Space (SVD Projection)
-Production indexing (`execution/index_concierge.py`) embeds **3,134 / 3,134** fact-grounded venue documents into 768-dimensional dense vectors (`@cf/baai/bge-base-en-v1.5`) stored in Cloudflare Vectorize (`motkarta-concierge-preview-v1`). Below is the reproducible local TF-IDF + SVD 2D projection over the included stratified venue slice (`data/places_slice.json`):
+Production indexing (`execution/index_concierge.py`) embeds **3,134 / 3,134** fact-grounded venue documents into 1,024-dimensional dense vectors (`@cf/baai/bge-base-en-v1.5`) stored in Cloudflare Vectorize (`motkarta-concierge-preview-v1`). Below is the reproducible local TF-IDF + SVD 2D projection over the included stratified venue slice (`data/places_slice.json`):
 
 ![Semantic Document Vector Space Projection](figures/04_vector_space_pca_projection.svg)
 
@@ -112,7 +112,7 @@ sequenceDiagram
   participant U as User Query ("äta husman")
   participant I as Intent & Filter Parser<br/>(lib/concierge/intent.ts)
   participant G as Hard Eligibility Gates<br/>(lib/concierge/gates.ts)
-  participant V as Cloudflare Vectorize<br/>(3,134 × 768d bge-base)
+  participant V as Cloudflare Vectorize<br/>(3,134 × 1,024d bge-m3)
   participant H as Hybrid Fusion Ranker<br/>(lib/concierge/hybrid_search.ts)
   participant S as Constrained Synthesizer<br/>(lib/concierge/synthesis.ts)
 
@@ -127,14 +127,22 @@ sequenceDiagram
 
 ![Live Hybrid Vector RAG Evaluation Proof](figures/05_rag_live_evaluation_proof.svg)
 
+### Stage 6 — Full End-to-End Vector RAG & Gemma-4 Anti-Hallucination Proof
+See [`notebooks/04_full_vector_rag_and_llm_synthesis.ipynb`](notebooks/04_full_vector_rag_and_llm_synthesis.ipynb) and [`docs/ml/concierge-real-model-trial.md`](docs/ml/concierge-real-model-trial.md) for the complete end-to-end execution proof:
+- **Dense Embeddings (`@cf/baai/bge-m3`, 1,024d cosine)**: **3,143 / 3,143** vectors verified by ID, count, and per-document SHA-256 `documentHash` across **197 embedding batches** (**114,962** input tokens).
+- **Hybrid Reciprocal Rank Fusion (`lib/concierge/hybrid_search.ts`)**: Fuses structured filters + lexical hits + dense vector cosine matches (`k=60`).
+- **Constrained LLM Synthesis (`@cf/google/gemma-4-26b-a4b-it`, `lib/concierge/synthesis.ts`)**: Strict JSON-only fact-ID selection (`temperature=0`, `enable_thinking=false`) validated programmatically — **23 / 32** passed strict validation (**22 / 32** within 2 s), **9 / 32** faulty outputs (7 empty-fact, 1 extra JSON object, 1 truncated) were blocked and safely degraded to verified deterministic cards (**0 hallucinations shipped**).
+
+![Full Vector RAG Real-Model Trial and Guardrails](figures/06_full_rag_trial_and_guardrails.svg)
+
 ---
 
 ## 5. Repository Map
 
 ```text
 motkarta-ml-rag-exam/
-├── notebooks/                   # 3 executed Jupyter notebooks (EDA → Baselines/LTR → Hybrid RAG)
-├── figures/                     # 5 vector SVG charts generated directly from real data
+├── notebooks/                   # 4 executed Jupyter notebooks (EDA → Baselines/LTR → Hybrid RAG)
+├── figures/                     # 6 vector SVG charts generated directly from real data
 ├── data/
 │   ├── places_slice.json        # Stratified 271-venue slice + full 3,140-venue catalog summary
 │   ├── stockholm_food_places_scored.csv  # 3,192 venues × 41 engineered ML features

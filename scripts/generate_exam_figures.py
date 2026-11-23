@@ -283,7 +283,7 @@ def fig4_vector_space_projection(slice_json: dict) -> Path:
     lines = svg_header(
         w, h,
         "4. Semantic Document Vector Space — 2D SVD Projection of Motkarta Venue Documents",
-        f"Real TF-IDF + TruncatedSVD over {len(places)} stratified Stockholm venue documents (2D variance explained: {explained:.1f}% | Production Vectorize: 3,134 × 768-dim bge-base-en-v1.5)",
+        f"Real TF-IDF + TruncatedSVD over {len(places)} stratified Stockholm venue documents (2D variance explained: {explained:.1f}% | Production Vectorize: 3,134 × 1,024-dim bge-m3 (cosine))",
     )
     px, py, pw, ph = 64, 96, 820, 336
     lines.append(f'  <rect x="{px}" y="{py}" width="{pw}" height="{ph}" fill="#FFFFFF" stroke="{GRID}"/>')
@@ -340,7 +340,7 @@ def fig5_rag_live_evaluation(capture: dict) -> Path:
 
     # Top KPI cards
     kpis = [
-        ("Vectorize Index", "3,134 / 3,134", "bge-base-en-v1.5 (768d)"),
+        ("Vectorize Index", "3,134 / 3,134", "bge-m3 (1,024d cosine)"),
         ("Faithfulness", f"{metrics['faithfulness']*100:.0f}%", "Zero hallucinated venues"),
         ("Answer Relevance", f"{metrics['answerRelevance']*100:.0f}%", "Intent-matched cards"),
         ("Median Latency", f"{metrics['providerLatencyMedianMs']} ms", f"P95: {metrics['providerLatencyP95Ms']} ms"),
@@ -376,6 +376,64 @@ def fig5_rag_live_evaluation(capture: dict) -> Path:
     return out
 
 
+
+
+def fig6_full_rag_trial_and_guardrails() -> Path:
+    w, h = 1120, 490
+    lines = svg_header(
+        w, h,
+        "6. Full Vector RAG Real-Model Trial — bge-m3 Embeddings + Gemma-4 Constrained Synthesis",
+        "Measured Cloudflare Workers AI + Vectorize trial (docs/ml/concierge-real-model-trial.md): 197 embedding batches, 114,962 tokens, zero hallucinations shipped",
+    )
+
+    # Left panel: Real-model trial pipeline funnel
+    lx, ly, lw, lh = 32, 90, 520, 368
+    lines.append(f'  <rect x="{lx}" y="{ly}" width="{lw}" height="{lh}" fill="#FFFFFF" stroke="{GRID}"/>')
+    lines.append(f'  <text x="{lx+16}" y="{ly+26}" font-family="ui-sans-serif, sans-serif" font-size="13" font-weight="700" fill="{INK}">End-to-End Full RAG Verification Funnel</text>')
+    stages = [
+        ("1. Vectorize Index (bge-m3 1024d)", "3,143 / 3,143", 100.0, EMERALD, "ID + SHA-256 hash verified"),
+        ("2. Live Semantic Queries", "128 / 128", 100.0, BLUE, "100% HTTP 200 vector lookup"),
+        ("3. Gemma-4 Synthesis API Calls", "32 / 32", 100.0, PURPLE, "@cf/google/gemma-4-26b-a4b-it"),
+        ("4. Strict Fact-ID Validator Pass", "23 / 32", 71.9, EMERALD, "Exact placeId + grounded factIds"),
+        ("5. Accepted Within 2s SLA", "22 / 32", 68.8, GOLD, "95.7% of accepted responses < 2s"),
+    ]
+    for i, (label, ratio, pct, color, note) in enumerate(stages):
+        y = ly + 56 + i * 58
+        bar_w = int((pct / 100.0) * 320)
+        lines.append(f'  <text x="{lx+16}" y="{y}" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="{INK}">{html.escape(label)}</text>')
+        lines.append(f'  <text x="{lx+lw-16}" y="{y}" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="{color}">{html.escape(ratio)} ({pct:.1f}%)</text>')
+        lines.append(f'  <rect x="{lx+16}" y="{y+7}" width="320" height="14" fill="#F3F1EC"/>')
+        lines.append(f'  <rect x="{lx+16}" y="{y+7}" width="{bar_w}" height="14" fill="{color}"/>')
+        lines.append(f'  <text x="{lx+346}" y="{y+18}" font-family="ui-sans-serif, sans-serif" font-size="10" fill="{MUTED}">{html.escape(note)}</text>')
+
+    # Right panel: Guardrail outcomes on 32 Gemma-4 synthesis calls
+    rx, ry, rw, rh = 576, 90, 512, 368
+    lines.append(f'  <rect x="{rx}" y="{ry}" width="{rw}" height="{rh}" fill="#FFFFFF" stroke="{GRID}"/>')
+    lines.append(f'  <text x="{rx+16}" y="{ry+26}" font-family="ui-sans-serif, sans-serif" font-size="13" font-weight="700" fill="{INK}">Anti-Hallucination Guardrail Audit (32 Gemma-4 Calls)</text>')
+    outcomes = [
+        ("Accepted — Grounded Fact-IDs", 23, EMERALD, "Served as constrained LLM synthesis"),
+        ("Rejected — Empty Fact Selection", 7, GOLD, "Safe fallback to verified template"),
+        ("Rejected — Extra JSON Object", 1, ACCENT, "Hallucinated entry blocked by validator"),
+        ("Rejected — Output Truncated", 1, ACCENT, "finish_reason != stop blocked"),
+        ("Hallucinations Reached Users", 0, INK, "Zero ungrounded venues or facts"),
+    ]
+    for i, (label, count, color, note) in enumerate(outcomes):
+        y = ry + 58 + i * 56
+        bar_w = int((count / 32.0) * 280)
+        lines.append(f'  <text x="{rx+16}" y="{y}" font-family="ui-sans-serif, sans-serif" font-size="11.5" font-weight="700" fill="{INK}">{html.escape(label)}</text>')
+        lines.append(f'  <rect x="{rx+16}" y="{y+8}" width="280" height="14" fill="#F3F1EC"/>')
+        if bar_w > 0:
+            lines.append(f'  <rect x="{rx+16}" y="{y+8}" width="{bar_w}" height="14" fill="{color}"/>')
+        lines.append(f'  <text x="{rx+306}" y="{y+19}" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="{color}">{count}/32</text>')
+        lines.append(f'  <text x="{rx+16}" y="{y+34}" font-family="ui-sans-serif, sans-serif" font-size="10" fill="{MUTED}">{html.escape(note)}</text>')
+
+    lines.append(f'  <text x="32" y="{h-14}" font-family="ui-monospace, monospace" font-size="10.5" fill="{MUTED}">Live hybrid+constrained example (2026-11-22): query="äta husman" → retrievalMode=hybrid, synthesisMode=constrained, cards=[Pelikan, Husman, Bord], fallbackReasons=[]</text>')
+    lines.append("</svg>")
+    out = FIG_DIR / "06_full_rag_trial_and_guardrails.svg"
+    out.write_text("\n".join(lines), encoding="utf-8")
+    return out
+
+
 def main() -> None:
     scored = pd.read_csv(DATA_DIR / "stockholm_food_places_scored.csv")
     slice_json = json.loads((DATA_DIR / "places_slice.json").read_text(encoding="utf-8"))
@@ -388,6 +446,7 @@ def main() -> None:
         fig3_baseline_vs_multisignal_and_ltr(scored, ab),
         fig4_vector_space_projection(slice_json),
         fig5_rag_live_evaluation(capture),
+        fig6_full_rag_trial_and_guardrails(),
     ]
     for path in outputs:
         print(f"Generated {path.relative_to(ROOT)}")

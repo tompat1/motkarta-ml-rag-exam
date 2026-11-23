@@ -12,7 +12,10 @@ from motkarta.drift import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-PLACES_FILE = ROOT / "public" / "data" / "places.json"
+PLACES_CANDIDATES = (
+    ROOT / "public" / "data" / "places.json",
+    ROOT / "data" / "places_slice.json",
+)
 
 
 def test_calculate_psi_identical_distribution():
@@ -70,10 +73,11 @@ def test_evaluate_dataset_drift_representation_gates():
 
 
 def test_evaluate_dataset_drift_live_places_smoke():
-    if not PLACES_FILE.exists():
-        pytest.skip("places.json not present locally")
+    places_file = next((p for p in PLACES_CANDIDATES if p.exists()), None)
+    if places_file is None:
+        pytest.skip("No places dataset present locally")
 
-    with open(PLACES_FILE, encoding="utf-8") as f:
+    with open(places_file, encoding="utf-8") as f:
         data = json.load(f)
         places = data if isinstance(data, list) else data.get("places", [])
 

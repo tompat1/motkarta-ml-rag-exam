@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 450" width="1120" height="450" role="img" aria-label="Live Hybrid Vector RAG Request Flow — Example Query: &quot;äta husman&quot;">
+  <rect width="1120" height="450" fill="#FCFBF7" stroke="#141414" stroke-width="1.5"/>
+  <text x="32" y="38" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#141414">Live Hybrid Vector RAG Request Flow — Example Query: &quot;äta husman&quot;</text>
+  <text x="32" y="58" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#5C5852">End-to-end execution across intent parsing, hard eligibility gates, Cloudflare Vectorize cosine lookup, RRF fusion, and constrained synthesis</text>
+  <defs>
+    <marker id="seq-solid" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#141414"/>
+    </marker>
+    <marker id="seq-return" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#059669"/>
+    </marker>
+  </defs>
+  <line x1="110" y1="130" x2="110" y2="418" stroke="#E5E1D8" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <rect x="32" y="84" width="156" height="46" rx="5" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
+  <rect x="32" y="84" width="156" height="5" rx="2" fill="#2563EB"/>
+  <text x="110" y="107" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#141414">User Query</text>
+  <text x="110" y="122" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.2" fill="#5C5852">&quot;äta husman&quot;</text>
+  <line x1="290" y1="130" x2="290" y2="418" stroke="#E5E1D8" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <rect x="212" y="84" width="156" height="46" rx="5" fill="#FFFFFF" stroke="#D97706" stroke-width="1.6"/>
+  <rect x="212" y="84" width="156" height="5" rx="2" fill="#D97706"/>
+  <text x="290" y="107" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Intent &amp; Filters</text>
+  <text x="290" y="122" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.2" fill="#5C5852">lib/concierge/intent.ts</text>
+  <line x1="470" y1="130" x2="470" y2="418" stroke="#E5E1D8" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <rect x="392" y="84" width="156" height="46" rx="5" fill="#FFFFFF" stroke="#D94E2A" stroke-width="1.6"/>
+  <rect x="392" y="84" width="156" height="5" rx="2" fill="#D94E2A"/>
+  <text x="470" y="107" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Eligibility Gates</text>
+  <text x="470" y="122" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.2" fill="#5C5852">lib/concierge/gates.ts</text>
+  <line x1="650" y1="130" x2="650" y2="418" stroke="#E5E1D8" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <rect x="572" y="84" width="156" height="46" rx="5" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6"/>
+  <rect x="572" y="84" width="156" height="5" rx="2" fill="#7C3AED"/>
+  <text x="650" y="107" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Cloudflare Vectorize</text>
+  <text x="650" y="122" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.2" fill="#5C5852">3,134 × 1,024d bge-m3</text>
+  <line x1="830" y1="130" x2="830" y2="418" stroke="#E5E1D8" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <rect x="752" y="84" width="156" height="46" rx="5" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
+  <rect x="752" y="84" width="156" height="5" rx="2" fill="#2563EB"/>
+  <text x="830" y="107" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Hybrid Fusion</text>
+  <text x="830" y="122" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.2" fill="#5C5852">hybrid_search.ts (RRF)</text>
+  <line x1="1010" y1="130" x2="1010" y2="418" stroke="#E5E1D8" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <rect x="932" y="84" width="156" height="46" rx="5" fill="#FFFFFF" stroke="#059669" stroke-width="1.6"/>
+  <rect x="932" y="84" width="156" height="5" rx="2" fill="#059669"/>
+  <text x="1010" y="107" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#141414">Constrained Synth</text>
+  <text x="1010" y="122" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.2" fill="#5C5852">synthesis.ts (Gemma-4)</text>
+  <line x1="110" y1="162" x2="284" y2="162" stroke="#141414" stroke-width="1.7" marker-end="url(#seq-solid)"/>
+  <rect x="30.0" y="145" width="340" height="15" rx="3" fill="#FCFBF7" opacity="0.92"/>
+  <text x="200.0" y="156" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.8" font-weight="600" fill="#141414">1. Parse cuisine, district &amp; constraints</text>
+  <line x1="290" y1="198" x2="464" y2="198" stroke="#141414" stroke-width="1.7" marker-end="url(#seq-solid)"/>
+  <rect x="210.0" y="181" width="340" height="15" rx="3" fill="#FCFBF7" opacity="0.92"/>
+  <text x="380.0" y="192" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.8" font-weight="600" fill="#141414">2. Filter catalog (Stockholm-only, no chains/closed)</text>
+  <line x1="290" y1="234" x2="644" y2="234" stroke="#141414" stroke-width="1.7" marker-end="url(#seq-solid)"/>
+  <rect x="300.0" y="217" width="340" height="15" rx="3" fill="#FCFBF7" opacity="0.92"/>
+  <text x="470.0" y="228" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.8" font-weight="600" fill="#141414">3. Embed query (bge-m3) &amp; top-K cosine lookup</text>
+  <line x1="650" y1="270" x2="824" y2="270" stroke="#059669" stroke-width="1.7" stroke-dasharray="6,3" marker-end="url(#seq-return)"/>
+  <rect x="570.0" y="253" width="340" height="15" rx="3" fill="#FCFBF7" opacity="0.92"/>
+  <text x="740.0" y="264" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.8" font-weight="600" fill="#059669">4. Semantic scores + verified vector IDs</text>
+  <line x1="470" y1="306" x2="824" y2="306" stroke="#059669" stroke-width="1.7" stroke-dasharray="6,3" marker-end="url(#seq-return)"/>
+  <rect x="480.0" y="289" width="340" height="15" rx="3" fill="#FCFBF7" opacity="0.92"/>
+  <text x="650.0" y="300" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.8" font-weight="600" fill="#059669">5. Eligible lexical &amp; structured candidates</text>
+  <line x1="830" y1="342" x2="1004" y2="342" stroke="#059669" stroke-width="1.7" stroke-dasharray="6,3" marker-end="url(#seq-return)"/>
+  <rect x="750.0" y="325" width="340" height="15" rx="3" fill="#FCFBF7" opacity="0.92"/>
+  <text x="920.0" y="336" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.8" font-weight="600" fill="#059669">6. Top-5 grounded venue cards + verified facts</text>
+  <line x1="1010" y1="378" x2="116" y2="378" stroke="#059669" stroke-width="1.7" stroke-dasharray="6,3" marker-end="url(#seq-return)"/>
+  <rect x="390.0" y="361" width="340" height="15" rx="3" fill="#FCFBF7" opacity="0.92"/>
+  <text x="560.0" y="372" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.8" font-weight="600" fill="#059669">7. Cited answer (Pelikan, Husman, Bord) — zero hallucination</text>
+</svg>

@@ -378,6 +378,160 @@ def fig5_rag_live_evaluation(capture: dict) -> Path:
 
 
 
+def fig0_system_architecture() -> Path:
+    w, h = 1120, 490
+    lines = svg_header(
+        w, h,
+        "End-to-End System Architecture — Ingestion & Gates → EDA & ML → Production Hybrid Vector RAG",
+        "Deterministic quality gates feed both the cross-validated ML scoring layer and the 1,024-dim Cloudflare Vectorize + Gemma-4 RAG pipeline",
+    )
+    lines.extend([
+        '  <defs>',
+        f'    <marker id="arr-ink" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">',
+        f'      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="{INK}"/>',
+        '    </marker>',
+        f'    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">',
+        f'      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="{EMERALD}"/>',
+        '    </marker>',
+        f'    <marker id="arr-gold" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">',
+        f'      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="{GOLD}"/>',
+        '    </marker>',
+        '  </defs>',
+    ])
+
+    def stage_box(x: int, y: int, bw: int, bh: int, title: str, color: str) -> None:
+        lines.append(f'  <rect x="{x}" y="{y}" width="{bw}" height="{bh}" rx="6" fill="#FFFFFF" stroke="{GRID}" stroke-width="1.4"/>')
+        lines.append(f'  <rect x="{x}" y="{y}" width="{bw}" height="32" rx="6" fill="{color}"/>')
+        lines.append(f'  <rect x="{x}" y="{y+24}" width="{bw}" height="8" fill="{color}"/>')
+        lines.append(f'  <text x="{x+14}" y="{y+21}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="800" fill="#FFFFFF">{html.escape(title)}</text>')
+
+    def node(x: int, y: int, nw: int, nh: int, title: str, subs: list[str], border: str = INK, fill: str = BG) -> None:
+        lines.append(f'  <rect x="{x}" y="{y}" width="{nw}" height="{nh}" rx="5" fill="{fill}" stroke="{border}" stroke-width="1.3"/>')
+        lines.append(f'  <text x="{x+12}" y="{y+19}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="{INK}">{html.escape(title)}</text>')
+        for i, sub in enumerate(subs):
+            lines.append(f'  <text x="{x+12}" y="{y+34+i*14}" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="{MUTED}">{html.escape(sub)}</text>')
+
+    # Stage 1: Ingestion & Data Quality Gates
+    stage_box(32, 82, 316, 360, "1. INGESTION & DATA QUALITY GATES", BLUE)
+    node(48, 128, 284, 54, "OpenStreetMap & Curated Guides", ["White Guide, Michelin, Visit Stockholm"], BLUE)
+    node(48, 198, 284, 54, "Stockholm Municipal Signals", ["Food Control & Permit Records"], BLUE)
+    node(48, 282, 284, 96, "Hard Exclusion & Boundary Gates", [
+        "• Stockholm municipality boundary",
+        "• Commercial chain exclusion",
+        "• Closed / merged venue suppression",
+        "→ 3,140 published independent venues",
+    ], INK, "#F8FAFC")
+
+    # Arrows inside Stage 1
+    lines.append(f'  <path d="M 190 182 L 190 198" stroke="{INK}" stroke-width="1.5" fill="none" marker-end="url(#arr-ink)"/>')
+    lines.append(f'  <path d="M 190 252 L 190 280" stroke="{INK}" stroke-width="1.5" fill="none" marker-end="url(#arr-ink)"/>')
+
+    # Stage 2: EDA, Baselines & ML Layer
+    stage_box(384, 82, 326, 360, "2. EDA, BASELINES & ML LAYER", GOLD)
+    node(400, 128, 294, 54, "EDA & Feature Engineering", ["3,192 venues × 41 engineered features"], GOLD)
+    node(400, 200, 294, 52, "Isolation Forest Anomaly Detection", ["Structural outliers & data-quality flags"], GOLD)
+    node(400, 270, 294, 56, "Transparent Multi-Signal Scoring", ["A/B baseline vs. popularity (+46% diversity)"], GOLD)
+    node(400, 344, 294, 56, "5-Fold Cross-Validated ML & LTR", ["HistGradientBoostingRegressor & OOF residuals"], GOLD)
+
+    # Arrows inside Stage 2
+    lines.append(f'  <path d="M 547 182 L 547 198" stroke="{INK}" stroke-width="1.5" fill="none" marker-end="url(#arr-ink)"/>')
+    lines.append(f'  <path d="M 547 252 L 547 268" stroke="{INK}" stroke-width="1.5" fill="none" marker-end="url(#arr-ink)"/>')
+    lines.append(f'  <path d="M 547 326 L 547 342" stroke="{INK}" stroke-width="1.5" fill="none" marker-end="url(#arr-ink)"/>')
+
+    # Stage 3: Hybrid Vector RAG (Production)
+    stage_box(746, 82, 342, 360, "3. HYBRID VECTOR RAG (PRODUCTION)", EMERALD)
+    node(762, 124, 310, 48, "Fact-Grounded Document Serializer", ["Deterministic venue facts & SHA-256 hashes"], EMERALD)
+    node(762, 184, 310, 48, "Cloudflare Workers AI Embeddings", ["@cf/baai/bge-m3 (1,024-dim dense cosine)"], EMERALD)
+    node(762, 244, 310, 48, "Cloudflare Vectorize Index", ["3,134 / 3,134 verified indexed vectors"], EMERALD)
+    node(762, 304, 310, 56, "Hybrid Retrieval Fusion (RRF k=60)", ["Intent + Structured Filters + Vector + Lexical"], EMERALD)
+    node(762, 372, 310, 56, "Constrained LLM Synthesis", ["Gemma-4-26b-a4b-it / Verified Template (0 hall.)"], ACCENT, "#FEF2F2")
+
+    # Arrows inside Stage 3
+    for y1, y2 in [(172, 182), (232, 242), (292, 302), (360, 370)]:
+        lines.append(f'  <path d="M 917 {y1} L 917 {y2}" stroke="{EMERALD}" stroke-width="1.5" fill="none" marker-end="url(#arr-emerald)"/>')
+
+    # Cross-stage connectors
+    # Stage 1 GATES -> Stage 2 EDA
+    lines.append(f'  <path d="M 332 315 L 366 315 L 366 155 L 398 155" stroke="{INK}" stroke-width="1.6" fill="none" marker-end="url(#arr-ink)"/>')
+    # Stage 1 GATES -> Stage 3 DOC (clean bottom rail)
+    lines.append(f'  <path d="M 190 378 L 190 458 L 728 458 L 728 148 L 760 148" stroke="{EMERALD}" stroke-width="1.6" stroke-dasharray="5,3" fill="none" marker-end="url(#arr-emerald)"/>')
+    lines.append(f'  <text x="458" y="472" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="{EMERALD}">Eligible venue catalog (Stockholm-only, chain-free) → RAG Document Index</text>')
+    # Stage 2 BASE -> Stage 3 RET
+    lines.append(f'  <path d="M 694 298 L 720 298 L 720 332 L 760 332" stroke="{GOLD}" stroke-width="1.7" fill="none" marker-end="url(#arr-gold)"/>')
+
+    lines.append("</svg>")
+    out = FIG_DIR / "00_system_architecture.svg"
+    out.write_text("\n".join(lines), encoding="utf-8")
+    return out
+
+
+def fig5a_rag_query_sequence() -> Path:
+    w, h = 1120, 450
+    lines = svg_header(
+        w, h,
+        "Live Hybrid Vector RAG Request Flow — Example Query: \"äta husman\"",
+        "End-to-end execution across intent parsing, hard eligibility gates, Cloudflare Vectorize cosine lookup, RRF fusion, and constrained synthesis",
+    )
+    lines.extend([
+        '  <defs>',
+        f'    <marker id="seq-solid" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">',
+        f'      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="{INK}"/>',
+        '    </marker>',
+        f'    <marker id="seq-return" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">',
+        f'      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="{EMERALD}"/>',
+        '    </marker>',
+        '  </defs>',
+    ])
+
+    participants = [
+        ("User Query", "\"äta husman\"", BLUE),
+        ("Intent & Filters", "lib/concierge/intent.ts", GOLD),
+        ("Eligibility Gates", "lib/concierge/gates.ts", ACCENT),
+        ("Cloudflare Vectorize", "3,134 × 1,024d bge-m3", PURPLE),
+        ("Hybrid Fusion", "hybrid_search.ts (RRF)", BLUE),
+        ("Constrained Synth", "synthesis.ts (Gemma-4)", EMERALD),
+    ]
+    xs = [110, 290, 470, 650, 830, 1010]
+    top_y = 84
+    bot_y = 418
+
+    # Participant headers & lifelines
+    for (title, sub, color), cx in zip(participants, xs):
+        lines.append(f'  <line x1="{cx}" y1="{top_y+46}" x2="{cx}" y2="{bot_y}" stroke="{GRID}" stroke-width="1.5" stroke-dasharray="5,4"/>')
+        lines.append(f'  <rect x="{cx-78}" y="{top_y}" width="156" height="46" rx="5" fill="#FFFFFF" stroke="{color}" stroke-width="1.6"/>')
+        lines.append(f'  <rect x="{cx-78}" y="{top_y}" width="156" height="5" rx="2" fill="{color}"/>')
+        lines.append(f'  <text x="{cx}" y="{top_y+23}" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="{INK}">{html.escape(title)}</text>')
+        lines.append(f'  <text x="{cx}" y="{top_y+38}" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9.2" fill="{MUTED}">{html.escape(sub)}</text>')
+
+    # Sequence steps: (num, src_idx, dst_idx, label, is_return)
+    steps = [
+        (1, 0, 1, "Parse cuisine, district & constraints", False),
+        (2, 1, 2, "Filter catalog (Stockholm-only, no chains/closed)", False),
+        (3, 1, 3, "Embed query (bge-m3) & top-K cosine lookup", False),
+        (4, 3, 4, "Semantic scores + verified vector IDs", True),
+        (5, 2, 4, "Eligible lexical & structured candidates", True),
+        (6, 4, 5, "Top-5 grounded venue cards + verified facts", True),
+        (7, 5, 0, "Cited answer (Pelikan, Husman, Bord) — zero hallucination", True),
+    ]
+
+    for i, (num, src, dst, label, is_ret) in enumerate(steps):
+        y = 162 + i * 36
+        x1, x2 = xs[src], xs[dst]
+        stroke = EMERALD if is_ret else INK
+        marker = "url(#seq-return)" if is_ret else "url(#seq-solid)"
+        dash = ' stroke-dasharray="6,3"' if is_ret else ""
+        x_end = x2 - 6 if x2 > x1 else x2 + 6
+        lines.append(f'  <line x1="{x1}" y1="{y}" x2="{x_end}" y2="{y}" stroke="{stroke}" stroke-width="1.7"{dash} marker-end="{marker}"/>')
+        mid = (x1 + x2) / 2
+        lines.append(f'  <rect x="{mid-170}" y="{y-17}" width="340" height="15" rx="3" fill="{BG}" opacity="0.92"/>')
+        lines.append(f'  <text x="{mid}" y="{y-6}" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.8" font-weight="600" fill="{stroke}">{num}. {html.escape(label)}</text>')
+
+    lines.append("</svg>")
+    out = FIG_DIR / "05a_rag_query_sequence.svg"
+    out.write_text("\n".join(lines), encoding="utf-8")
+    return out
+
+
 def fig6_full_rag_trial_and_guardrails() -> Path:
     w, h = 1120, 490
     lines = svg_header(
@@ -441,10 +595,12 @@ def main() -> None:
     capture = json.loads((DATA_DIR / "rag_provider_capture.json").read_text(encoding="utf-8"))
 
     outputs = [
+        fig0_system_architecture(),
         fig1_eda_districts_and_completeness(scored, slice_json),
         fig2_correlations_and_anomalies(scored),
         fig3_baseline_vs_multisignal_and_ltr(scored, ab),
         fig4_vector_space_projection(slice_json),
+        fig5a_rag_query_sequence(),
         fig5_rag_live_evaluation(capture),
         fig6_full_rag_trial_and_guardrails(),
     ]

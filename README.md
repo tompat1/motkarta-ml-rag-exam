@@ -10,7 +10,7 @@
 
 ### One-Command Full Exam Setup & Verification
 
-Run this single command from the repository root to create `.venv`, install Python dependencies, regenerate all 6 real-data SVG charts, re-execute all 4 Jupyter notebooks, and verify all 67 automated tests (54 Python + 13 Node):
+Run this single command from the repository root to create `.venv`, install Python dependencies, regenerate all 8 real-data SVG charts & architecture diagrams, re-execute all 4 Jupyter notebooks, and verify all 67 automated tests (54 Python + 13 Node):
 
 ```bash
 bash scripts/verify_exam.sh
@@ -30,41 +30,7 @@ Shortcuts in `package.json`: `npm run verify`, `npm run figures`, `npm run noteb
 
 ## 2. End-to-End System Architecture (EDA → ML → Hybrid Vector RAG)
 
-```mermaid
-flowchart LR
-  subgraph Data["1. Ingestion & Data Quality Gates"]
-    OSM["OpenStreetMap & Curated Guides<br/>(White Guide, Michelin, Visit Sthlm)"]
-    MUNI["Stockholm Municipal Signals<br/>(Food Control & Permits)"]
-    GATES["Hard Exclusion & Boundary Gates<br/>• Stockholm municipality boundary<br/>• Commercial chain exclusion<br/>• Closed / merged suppression"]
-  end
-
-  subgraph ML["2. EDA, Baselines & ML Layer"]
-    EDA["EDA & Feature Engineering<br/>(3,192 venues × 41 features)"]
-    OUT["Isolation Forest<br/>Structural Anomalies"]
-    BASE["Transparent Multi-Signal<br/>Scoring & A/B Baseline"]
-    LTR["5-Fold Cross-Validated<br/>HistGradientBoosting & LTR"]
-  end
-
-  subgraph RAG["3. Hybrid Vector RAG (Production)"]
-    DOC["Fact-Grounded Venue<br/>Document Serializer"]
-    EMB["Cloudflare Workers AI<br/>@cf/baai/bge-m3 (1,024-dim cosine)"]
-    VEC["Cloudflare Vectorize<br/>3,134 / 3,134 Indexed Vectors"]
-    RET["Hybrid Retrieval Fusion<br/>Intent + Structured Filters<br/>+ Vector Cosine + Lexical"]
-    SYN["Constrained Synthesis<br/>Gemma-4-26b-a4b-it / Verified Template<br/>(Zero Hallucinated Venues)"]
-  end
-
-  OSM --> GATES
-  MUNI --> GATES
-  GATES --> EDA
-  EDA --> OUT
-  EDA --> BASE
-  BASE --> LTR
-  GATES --> DOC
-  DOC --> EMB --> VEC
-  VEC --> RET
-  BASE --> RET
-  RET --> SYN
-```
+![End-to-End System Architecture](figures/00_system_architecture.svg)
 
 ---
 
@@ -97,31 +63,14 @@ Open any notebook directly on GitHub or JupyterLab — every cell has been execu
 ![Baseline vs Multi-Signal and Cross-Validated Residuals](figures/03_baseline_vs_multisignal_and_ltr.svg)
 
 ### Stage 4 — Semantic Document Vector Space (SVD Projection)
-Production indexing (`execution/index_concierge.py`) embeds **3,134 / 3,134** fact-grounded venue documents into 1,024-dimensional dense vectors (`@cf/baai/bge-base-en-v1.5`) stored in Cloudflare Vectorize (`motkarta-concierge-preview-v1`). Below is the reproducible local TF-IDF + SVD 2D projection over the included stratified venue slice (`data/places_slice.json`):
+Production indexing (`execution/index_concierge.py`) embeds **3,134 / 3,134** fact-grounded venue documents into 1,024-dimensional dense vectors (`@cf/baai/bge-m3`) stored in Cloudflare Vectorize (`motkarta-concierge-preview-v1`). Below is the reproducible local TF-IDF + SVD 2D projection over the included stratified venue slice (`data/places_slice.json`):
 
 ![Semantic Document Vector Space Projection](figures/04_vector_space_pca_projection.svg)
 
 ### Stage 5 — Live Hybrid Vector RAG Evaluation Proof
 Measured live on `https://motkarta.rynell.org` (`data/rag_provider_capture.json`) across 12 Swedish and English Stockholm queries:
 
-```mermaid
-sequenceDiagram
-  autonumber
-  participant U as User Query ("äta husman")
-  participant I as Intent & Filter Parser<br/>(lib/concierge/intent.ts)
-  participant G as Hard Eligibility Gates<br/>(lib/concierge/gates.ts)
-  participant V as Cloudflare Vectorize<br/>(3,134 × 1,024d bge-m3)
-  participant H as Hybrid Fusion Ranker<br/>(lib/concierge/hybrid_search.ts)
-  participant S as Constrained Synthesizer<br/>(lib/concierge/synthesis.ts)
-
-  U->>I: Parse cuisine, district, constraints
-  I->>G: Filter catalog (Stockholm only, no chains/closed)
-  I->>V: Embed query & top-K cosine lookup
-  V-->>H: Semantic scores + vector IDs
-  G-->>H: Eligible lexical & structured candidates
-  H-->>S: Top-5 grounded venue cards + verified facts
-  S-->>U: Cited answer (Pelikan, Husman, Bord) — zero hallucination
-```
+![Live Hybrid Vector RAG Query Sequence](figures/05a_rag_query_sequence.svg)
 
 ![Live Hybrid Vector RAG Evaluation Proof](figures/05_rag_live_evaluation_proof.svg)
 
@@ -140,7 +89,7 @@ See [`notebooks/04_full_vector_rag_and_llm_synthesis.ipynb`](notebooks/04_full_v
 ```text
 motkarta-ml-rag-exam/
 ├── notebooks/                   # 4 executed Jupyter notebooks (EDA → Baselines/LTR → Hybrid RAG)
-├── figures/                     # 6 vector SVG charts generated directly from real data
+├── figures/                     # 8 vector SVG charts & diagrams generated directly from real data
 ├── data/
 │   ├── places_slice.json        # Stratified 271-venue slice + full 3,140-venue catalog summary
 │   ├── stockholm_food_places_scored.csv  # 3,192 venues × 41 engineered ML features
@@ -155,7 +104,7 @@ motkarta-ml-rag-exam/
 ├── execution/                   # Vectorize indexing (index_concierge.py) & RAG evaluation harnesses
 ├── docs/ml/                     # Full architecture, data contracts, holdout & evaluation docs
 ├── scripts/
-│   ├── generate_exam_figures.py # Re-generates all 5 SVG figures from data/
+│   ├── generate_exam_figures.py # Re-generates all 8 SVG figures & diagrams from data/
 │   └── build_and_execute_notebooks.py
 ├── tests_python/                # Python ML, scoring, LTR, drift, outlier & RAG unit tests
 └── tests/                       # TypeScript scoring, hybrid search, RAG & rate-gate tests

@@ -4,7 +4,33 @@
 
 ---
 
-## 1. End-to-End System Architecture (EDA → ML → Hybrid Vector RAG)
+## 1. Reproducibility — Run Everything Locally
+
+**Prerequisites:** Python 3.10+ and Node.js 22+ (no `npm install` needed — zero JS dependencies).
+
+```bash
+# 0. Install Python dependencies (recommended inside a virtual environment)
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# 1. Regenerate all 5 real-data SVG charts (deterministic)
+python3 scripts/generate_exam_figures.py
+
+# 2. Re-execute all 3 exam Jupyter notebooks
+python3 scripts/build_and_execute_notebooks.py
+
+# 3. Run Python ML & RAG test suite (54 tests)
+pytest -q tests_python/
+
+# 4. Run TypeScript Scoring & Hybrid RAG test suite (13 tests, Node 22+)
+node --test tests/scoring.test.mjs tests/concierge-hybrid-search.test.mjs
+```
+
+> All 4 steps are also available as shortcuts in `package.json`: `npm run figures`, `npm run notebooks`, `npm run test:python`, and `npm run test:rag`.
+
+---
+
+## 2. End-to-End System Architecture (EDA → ML → Hybrid Vector RAG)
 
 ```mermaid
 flowchart LR
@@ -44,7 +70,7 @@ flowchart LR
 
 ---
 
-## 2. Exam Walkthrough Notebooks (Pre-Executed & Reproducible)
+## 3. Exam Walkthrough Notebooks (Pre-Executed & Reproducible)
 
 Open any notebook directly on GitHub or JupyterLab — every cell has been executed against the real included data slices with inline outputs and vector graphics:
 
@@ -56,7 +82,7 @@ Open any notebook directly on GitHub or JupyterLab — every cell has been execu
 
 ---
 
-## 3. Visual Evidence & Real-Data Diagnostics
+## 4. Visual Evidence & Real-Data Diagnostics
 
 ### Stage 1 — Exploratory Data Analysis & Completeness Audit
 ![EDA Districts and Completeness](figures/01_eda_districts_and_completeness.svg)
@@ -103,7 +129,7 @@ sequenceDiagram
 
 ---
 
-## 4. Repository Map
+## 5. Repository Map
 
 ```text
 motkarta-ml-rag-exam/
@@ -128,29 +154,3 @@ motkarta-ml-rag-exam/
 ├── tests_python/                # Python ML, scoring, LTR, drift, outlier & RAG unit tests
 └── tests/                       # TypeScript scoring, hybrid search, RAG & rate-gate tests
 ```
-
----
-
-## 5. Reproducibility — Run Everything Locally
-
-**Prerequisites:** Python 3.10+ and Node.js 22+ (no `npm install` needed — zero JS dependencies).
-
-```bash
-# 0. Install Python dependencies (recommended inside a virtual environment)
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-# 1. Regenerate all 5 real-data SVG charts (deterministic)
-python3 scripts/generate_exam_figures.py
-
-# 2. Re-execute all 3 exam Jupyter notebooks
-python3 scripts/build_and_execute_notebooks.py
-
-# 3. Run Python ML & RAG test suite (54 tests)
-pytest -q tests_python/
-
-# 4. Run TypeScript Scoring & Hybrid RAG test suite (13 tests, Node 22+)
-node --test tests/scoring.test.mjs tests/concierge-hybrid-search.test.mjs
-```
-
-> All 4 steps are also available as shortcuts in `package.json`: `npm run figures`, `npm run notebooks`, `npm run test:python`, and `npm run test:rag`.

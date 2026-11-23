@@ -8,25 +8,23 @@
 
 **Prerequisites:** Python 3.10+ and Node.js 22+ (no `npm install` needed — zero JS dependencies).
 
+### One-Command Full Exam Setup & Verification
+
+Run this single command from the repository root to create `.venv`, install Python dependencies, regenerate all 6 real-data SVG charts, re-execute all 4 Jupyter notebooks, and verify all 67 automated tests (54 Python + 13 Node):
+
 ```bash
-# 0. Install Python dependencies (recommended inside a virtual environment)
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-# 1. Regenerate all 6 real-data SVG charts (deterministic)
-python3 scripts/generate_exam_figures.py
-
-# 2. Re-execute all 4 exam Jupyter notebooks
-python3 scripts/build_and_execute_notebooks.py
-
-# 3. Run Python ML & RAG test suite (54 tests)
-pytest -q tests_python/
-
-# 4. Run TypeScript Scoring & Hybrid RAG test suite (13 tests, Node 22+)
-node --test tests/scoring.test.mjs tests/concierge-hybrid-search.test.mjs
+bash scripts/verify_exam.sh
 ```
 
-> All 4 steps are also available as shortcuts in `package.json`: `npm run figures`, `npm run notebooks`, `npm run test:python`, and `npm run test:rag`.
+<details>
+<summary>Or run each step individually (click to expand)</summary>
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt && python3 scripts/generate_exam_figures.py && python3 scripts/build_and_execute_notebooks.py && pytest -q tests_python/ && node --test tests/scoring.test.mjs tests/concierge-hybrid-search.test.mjs
+```
+
+Shortcuts in `package.json`: `npm run verify`, `npm run figures`, `npm run notebooks`, `npm run test:python`, and `npm run test:rag`.
+</details>
 
 ---
 
@@ -49,7 +47,7 @@ flowchart LR
 
   subgraph RAG["3. Hybrid Vector RAG (Production)"]
     DOC["Fact-Grounded Venue<br/>Document Serializer"]
-    EMB["Cloudflare Workers AI<br/>bge-base-en-v1.5 (1,024-dim)"]
+    EMB["Cloudflare Workers AI<br/>@cf/baai/bge-m3 (1,024-dim cosine)"]
     VEC["Cloudflare Vectorize<br/>3,134 / 3,134 Indexed Vectors"]
     RET["Hybrid Retrieval Fusion<br/>Intent + Structured Filters<br/>+ Vector Cosine + Lexical"]
     SYN["Constrained Synthesis<br/>Gemma-4-26b-a4b-it / Verified Template<br/>(Zero Hallucinated Venues)"]

@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Standalone ML, EDA, LTR & Hybrid Vector RAG exam portfolio extracted from Motkarta.",
   "scripts": {
+    "verify": "bash scripts/verify_exam.sh",
     "test:rag": "node --test tests/scoring.test.mjs tests/concierge-hybrid-search.test.mjs",
     "test:python": "pytest -q tests_python/",
     "figures": "python3 scripts/generate_exam_figures.py",

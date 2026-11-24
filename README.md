@@ -2,6 +2,10 @@
 
 > **Course Exam Repository**: From Exploratory Data Analysis (EDA) and Deterministic Quality Gates to Multi-Signal Scoring, Cross-Validated ML, and Production Hybrid Vector RAG over Stockholm's Independent Food Map (**3,140 published venues**, **3,134 indexed 1,024-dim vectors**).
 
+> **How to Evaluate This Repository**
+> - **Viewing on GitHub (no setup required):** Every architecture diagram, all 9 SVG charts, all 4 pre-executed Jupyter notebooks (with saved outputs & inline graphics), and all evaluation reports in `docs/ml/` render directly in the browser.
+> - **Running locally (optional reproducibility check):** Terminal setup is only needed if you clone the repository to regenerate the figures/notebooks or execute the 67 automated tests (see Section 1 below).
+
 ---
 
 ## 1. Reproducibility — Run Everything Locally
